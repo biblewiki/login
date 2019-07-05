@@ -1,0 +1,10 @@
+<If "req('Host') = 'edit.josua.biblewiki.one'">
+    Authtype Basic
+    AuthName "user and password"
+    AuthUserFile /home/mwepf1gm/www/biblewiki.one/michael/.htpasswd
+    Require valid-user
+</If>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
