@@ -1,4 +1,4 @@
-<If "req('Host') = 'edit.josua.biblewiki.one'">
+<If "req('Host') = 'login.josua.biblewiki.one'|| req('Host') = 'login.joel.biblewiki.one'">
     Authtype Basic
     AuthName "user and password"
     AuthUserFile /home/mwepf1gm/www/biblewiki.one/michael/.htpasswd
