@@ -61,15 +61,101 @@ function CheckLoginWeb($data){
         if (isset($array[0]['user_ID'])){
             $result = CheckPassword($array[0]['user_password'], $user_passwort, $array[0]['user_ID']);
 
-            return json_encode(array('result' => $result));
+            return json_encode(array('error' => $result));
         } else {
-            return json_encode(array('result' => 'No User'));
+            return json_encode(array('action' => 'Add User'));
         }
     }
     catch(Exception $e){
         return json_encode(array('error' => $e->getMessage()));
     }
 }
+
+
+// Passwort überprüfen
+function CheckPassword($password, $passwordCheck, $userID){
+
+    // Überprüfen ob das Passwort stimmt
+    if($password === $passwordCheck){
+
+        $userData = GetUserData($userID, 'Password');
+
+        return $userData;
+    } else {
+        LoginLog($userID, 'Password', $error = 'Wrong Password');
+        return 'Wrong Password';
+    }
+
+}
+
+// Benutzerinfos abrufen
+function GetUserData($userID, $method){
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+        
+        // Select definieren
+        $stmt = $_db->prepare("SELECT
+        ".USER_DB.".users.user_ID,
+        ".USER_DB.".users.user_firstname,
+        ".USER_DB.".users.user_lastname,
+        ".USER_DB.".users.user_level,
+        ".USER_DB.".users.user_picture
+        FROM ".USER_DB.".users 
+        WHERE ".USER_DB.".users.user_ID = ?;"
+        );
+    
+        $stmt->bind_param("i", $userID);
+    
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        $result = SessionStart($userID, $array, $method);
+    
+        return $result;
+    }
+    catch(Exception $e){
+        return $e->getMessage();
+    }
+}
+
+function SessionStart($userID, $userData, $method){
+
+    // Session starten
+    session_start();
+
+    $_SESSION["login"] = true;
+    $_SESSION["id"] = $userID;
+    $_SESSION["firstname"] = $userData[0]['user_firstname'];
+    $_SESSION["lastname"] = $userData[0]['user_lastname'];
+    $_SESSION["level"] = $userData[0]['user_level'];
+    $_SESSION["picture"] = $userData[0]['user_picture'];
+
+    $result = LoginLog($userID, $method);
+
+    return "Session started";
+}
+
+function LoginLog($userID, $method, $error = ''){
+        
+        $hostname = gethostname();
+        $action = 'login';
+
+        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+        
+        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".login_log (id_user, ip, hostname, browser, method, action, error) VALUES (?,?,?,?,?,?,?);");
+    
+        $stmt->bind_param("issssss", $userID, $_SERVER['REMOTE_ADDR'], $hostname, $_SERVER['HTTP_USER_AGENT'], $method, $action, $error);
+    
+        $stmt->execute();
+}
+
+##############################################################################
+#   Google
+##############################################################################
 
 // Überprüfen ob Google User schon existiert
 function CheckGoogleUser($userData){
@@ -94,7 +180,7 @@ function CheckGoogleUser($userData){
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])){
-            $result = GetUserData($array[0]['user_ID']);
+            $result = GetUserData($array[0]['user_ID'], 'Google');
 
             return $result;
         // Wenn nicht, wird er erstellt
@@ -135,7 +221,7 @@ function AddGoogleUser($userData){
         $userID = $array[0]['LAST_INSERT_ID()'];
 
         // Userdaten auslesen und dann Session starten
-        return $userData = GetUserData($userID);
+        return $userData = GetUserData($userID, 'Google');
     }
     catch(Exception $e){
         return $e->getMessage();
@@ -144,69 +230,10 @@ function AddGoogleUser($userData){
 }
 
 
-// Passwort überprüfen
-function CheckPassword($password, $passwordCheck, $userID){
 
-    // Überprüfen ob das Passwort stimmt
-    if($password === $passwordCheck){
-
-        $userData = GetUserData($userID);
-
-        return $userData;
-    } else {
-        return 'Wrong Password';
-    }
-
-}
-
-// Benutzerinfos abrufen
-function GetUserData($userID){
-    try {
-        // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
-        $stmt = $_db->getDB()->stmt_init();
-        
-        // Select definieren
-        $stmt = $_db->prepare("SELECT
-        ".USER_DB.".users.user_ID,
-        ".USER_DB.".users.user_firstname,
-        ".USER_DB.".users.user_lastname,
-        ".USER_DB.".users.user_level,
-        ".USER_DB.".users.user_picture
-        FROM ".USER_DB.".users 
-        WHERE ".USER_DB.".users.user_ID = ?;"
-        );
-    
-        $stmt->bind_param("i", $userID);
-    
-        $stmt->execute();
-
-        $array = db::getTableAsArray($stmt);
-
-        $result = SessionStart($userID, $array);
-    
-        return $result;
-    }
-    catch(Exception $e){
-        return $e->getMessage();
-    }
-}
-
-function SessionStart($userID, $userData){
-
-    // Session starten
-    session_start();
-
-    $_SESSION["login"] = true;
-    $_SESSION["ID"] = $userID;
-    $_SESSION["firstname"] = $userData[0]['user_firstname'];
-    $_SESSION["lastname"] = $userData[0]['user_lastname'];
-    $_SESSION["level"] = $userData[0]['user_level'];
-    $_SESSION["picture"] = $userData[0]['user_picture'];
-
-    return "Session started";
-}
-
+##############################################################################
+#   Telegram
+##############################################################################
 
 // Überprüfen ob Telegram User schon existiert
 function CheckTelegramUser($userData){
@@ -231,7 +258,7 @@ function CheckTelegramUser($userData){
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])){
-            $result = GetUserData($array[0]['user_ID']);
+            $result = GetUserData($array[0]['user_ID'], 'Telegram');
             
             return $result;
         // Wenn nicht, wird er erstellt
@@ -272,7 +299,7 @@ function AddTelegramUser($userData){
         $userID = $array[0]['LAST_INSERT_ID()'];
 
         // Userdaten auslesen und dann Session starten
-        return $userData = GetUserData($userID);
+        return $userData = GetUserData($userID, 'Telegram');
     }
     catch(Exception $e){
         return $e->getMessage();
