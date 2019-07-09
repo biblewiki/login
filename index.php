@@ -1,6 +1,7 @@
 <?php
 // Goolge API Daten einbinden
 require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
+$bot_username = BOT_USERNAME;
 ?>
 
 <html lang="en">
@@ -46,7 +47,10 @@ require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
                         
                     </fieldset>
                     
+                    <!-- Google Login Button -->
                     <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
+                    <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $bot_username ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
+                    
                     <div class="clearfix"></div>
                 </form>
 
@@ -54,7 +58,7 @@ require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
 
                 </div> <!-- end login -->
                 <div class="logo">
-                    <img src="https://edit.josua.biblewiki.one/img/biblewiki_weiss.svg" height="180px">
+                    <img src="img/biblewiki_weiss.svg" height="300px">
                     <div class="clearfix"></div>
                 </div>
       
@@ -65,7 +69,7 @@ require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
 </div>
 <script>
     $(document).ready(function(){
-
+        // Login Button Klick
         $('#login-btn').click(function(){
 
             var benutzername = $('#benutzername').val();
@@ -89,7 +93,7 @@ require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
 				        alert(data['error']);
 			        }
 			        else {
-alert("erfolgreich");
+                window.location.replace("https://edit.biblewiki.one");
 			        }
 		        }
 	        });

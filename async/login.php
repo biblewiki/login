@@ -95,6 +95,7 @@ function CheckGoogleUser($userData){
             $result = GetUserData($array[0]['user_ID']);
 
             return $result;
+        // Wenn nicht, wird er erstellt
         } else {
             
             $result = AddGoogleUser($userData);
@@ -106,6 +107,40 @@ function CheckGoogleUser($userData){
         return json_encode(array('error' => $e->getMessage()));
     }
 }
+
+function AddGoogleUser($userData){
+    try {
+        // Standardwerte definieren
+        $defaultLevel = '50';
+        $defaultGoogleState = '50';
+
+        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+        
+        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_email, user_state, user_picture, id_google) VALUES (?,?,?,?,?,?,?,?);");
+    
+        $stmt->bind_param("sssisisi", $userData['email'], $userData['given_name'], $userData['family_name'], $defaultLevel, $userData['email'], $defaultGoogleState, $userData['picture'], $userData['id']);
+    
+        $stmt->execute();
+
+        // Eingefügte ID auslesen
+        $stmt = $_db->prepare("SELECT LAST_INSERT_ID();");
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        $userID = $array[0]['LAST_INSERT_ID()'];
+
+        // Userdaten auslesen und dann Session starten
+        return $userData = GetUserData($userID);
+    }
+    catch(Exception $e){
+        return array('error' => $e->getMessage());
+    }
+
+}
+
 
 // Passwort überprüfen
 function CheckPassword($password, $passwordCheck, $userID){
@@ -171,33 +206,42 @@ function SessionStart($userID, $userData){
 }
 
 
-function AddGoogleUser($userData){
+// Überprüfen ob Telegram User schon existiert
+function CheckTelegramUser($userData){
     try {
-        $defaultLevel = '50';
-        $defaultGoogleState = '50';
 
+        // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
         $stmt = $_db->getDB()->stmt_init();
         
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_email, user_state, user_picture, id_google) VALUES (?,?,?,?,?,?,?,?);");
-    
-        $stmt->bind_param("sssisisi", $userData['email'], $userData['given_name'], $userData['family_name'], $defaultLevel, $userData['email'], $defaultGoogleState, $userData['picture'], $userData['id']);
-    
-        $stmt->execute();
+        // Select definieren
+        $stmt = $_db->prepare("SELECT
+        ".USER_DB.".users.user_ID
+        FROM ".USER_DB.".users 
+        WHERE ".USER_DB.".users.id_telegram = ?;"
+        );
 
-        $stmt = $_db->prepare("SELECT LAST_INSERT_ID();");
+        $stmt->bind_param("s", $userData['id']);
 
         $stmt->execute();
 
         $array = db::getTableAsArray($stmt);
 
-        $userID = $array[0]['LAST_INSERT_ID()'];
+        // Überprüfen ob Benutzer existiert
+        if (isset($array[0]['user_ID'])){
+            $result = GetUserData($array[0]['user_ID']);
+            
+            return $result;
+        // Wenn nicht, wird er erstellt
+        } else {
+            alert('test');
+            //$result = AddTelegramUser($userData);
 
-        return $userData = GetUserData($userID);
+            return $result;
+        }
     }
     catch(Exception $e){
-        return array('error' => $e->getMessage());
+        return json_encode(array('error' => $e->getMessage()));
     }
-
 }
 ?>

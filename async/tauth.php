@@ -1,6 +1,8 @@
 <?php
-
+// Telegram API Daten einbinden
 require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
+// Login Check einbinden
+require_once ('login.php');
 
 function checkTelegramAuthorization($auth_data) {
   $check_hash = $auth_data['hash'];
@@ -22,19 +24,17 @@ function checkTelegramAuthorization($auth_data) {
   return $auth_data;
 }
 
-function saveTelegramUserData($auth_data) {
-  $auth_data_json = json_encode($auth_data);
-  setcookie('tg_user', $auth_data_json);
-}
-
-
 try {
   $auth_data = checkTelegramAuthorization($_GET);
-  saveTelegramUserData($auth_data);
+  $result = CheckTelegramUser($auth_data);
+  
+  if ($result === "Session started"){
+    header('Location: https://edit.biblewiki.one');
+  }
+
 } catch (Exception $e) {
   die ($e->getMessage());
 }
 
-header('Location: /login/check_mysql.php?telegram=1');
 
 ?>

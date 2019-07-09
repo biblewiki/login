@@ -1,5 +1,4 @@
 <?php
-
 // Goolge API Daten einbinden
 require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
 // Google API einbinden
@@ -19,10 +18,14 @@ if(isset($_GET['code'])) {
 		// Get user information
 		$user_info = $gapi->GetUserProfileInfo($data['access_token']);
 
+		// User erstellen oder Daten holen
 		$result = CheckGoogleUser($user_info);
-var_dump($result);
+		
+		// Wenn die Session gestartet wurde, weiterleiten
 		if ($result === "Session started"){
-			header('Location: https://edit.josua.biblewiki.one');
+			header('Location: https://edit.biblewiki.one');
+		} else {
+			header('Location: ../');
 		}
 	}
 	catch(Exception $e) {
