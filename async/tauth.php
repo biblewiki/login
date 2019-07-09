@@ -1,6 +1,8 @@
 <?php
 // Telegram API Daten einbinden
-require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
+$user = posix_getpwuid(posix_getuid()); 
+$homedir = $user['dir']; 
+require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
 // Login Check einbinden
 require_once ('login.php');
 

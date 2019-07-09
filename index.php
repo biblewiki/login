@@ -1,6 +1,9 @@
 <?php
 // Goolge API Daten einbinden
-require_once ('/home/mwepf1gm/www/biblewiki.one/config/biblewiki_bottoken.php');
+$user = posix_getpwuid(posix_getuid()); 
+$homedir = $user['dir']; 
+require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
+
 $bot_username = BOT_USERNAME;
 ?>
 
@@ -33,8 +36,14 @@ $bot_username = BOT_USERNAME;
             <div class="middle">
                 <div id="login">
 
-                <form action="javascript:void(0);" method="get">
 
+                
+                <form action="javascript:void(0);" method="get">
+                    <!-- Telegram Login Button -->
+                    <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $bot_username ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
+                    <!-- Google Login Button -->
+                    <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
+                    
                     <fieldset class="clearfix">
 
                         <p><span class="fa fa-user"></span><input id="benutzername" type="text"  Placeholder="Benutzername" required></p> 
@@ -42,14 +51,10 @@ $bot_username = BOT_USERNAME;
             
                         <div>
                             <span style="width:52%; text-align:left;  display: inline-block;"><a class="small-text" href="#">Passwort vergessen?</a></span>
-                            <span style="width:46%; text-align:right;  display: inline-block;"><input id="login-btn" type="submit" value="Sign In"></span>
+                            <span style="width:46%; text-align:right;  display: inline-block;"><input id="login-btn" type="submit" value="Login"></span>
                         </div>
                         
                     </fieldset>
-                    
-                    <!-- Google Login Button -->
-                    <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
-                    <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $bot_username ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
                     
                     <div class="clearfix"></div>
                 </form>

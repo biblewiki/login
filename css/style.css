@@ -47,7 +47,7 @@ input {
 	font-size: 14px;
 	line-height: 1.5em;
 	padding: 0;
-	-webkit-appearance: none;
+  -webkit-appearance: none;
 }
 
 p {
@@ -66,12 +66,13 @@ p {
 }
 
 img.imgGoogle {
-  width:100%;
-  margin-top:20px;
+  width:92%;
+  margin-top:10px;
+  margin-bottom: 20px;
 }
 
-.btn{
-  padding:60px;
+iframe{
+  margin-top:20px;
 }
 
 

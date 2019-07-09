@@ -1,6 +1,8 @@
 <?php
 // User Datenbank Logindaten einbinden
-require_once ('/home/mwepf1gm/www/biblewiki.one/config/db_biblewiki_users.php');
+$user = posix_getpwuid(posix_getuid()); 
+$homedir = $user['dir']; 
+require_once ($homedir.'/config/biblewiki/db_biblewiki_users.php');
 
 // Datenbank Classe einbinden
 require_once dirname(__FILE__) . "/../lib/db.class.php";
@@ -254,7 +256,7 @@ function AddTelegramUser($userData){
         $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
         $stmt = $_db->getDB()->stmt_init();
         
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_state, user_photo, id_telegram) VALUES (?,?,?,?,?,?,?);");
+        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_state, user_picture, id_telegram) VALUES (?,?,?,?,?,?,?);");
     
         $stmt->bind_param("sssiisi", $userData['username'], $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $userData['photo_url'], $userData['id']);
     
