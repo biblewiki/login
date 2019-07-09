@@ -104,7 +104,7 @@ function CheckGoogleUser($userData){
         }
     }
     catch(Exception $e){
-        return json_encode(array('error' => $e->getMessage()));
+        return $e->getMessage();
     }
 }
 
@@ -136,7 +136,7 @@ function AddGoogleUser($userData){
         return $userData = GetUserData($userID);
     }
     catch(Exception $e){
-        return array('error' => $e->getMessage());
+        return $e->getMessage();
     }
 
 }
@@ -186,7 +186,7 @@ function GetUserData($userID){
         return $result;
     }
     catch(Exception $e){
-        return array('error' => $e->getMessage());
+        return $e->getMessage();
     }
 }
 
@@ -234,8 +234,7 @@ function CheckTelegramUser($userData){
             return $result;
         // Wenn nicht, wird er erstellt
         } else {
-            alert('test');
-            //$result = AddTelegramUser($userData);
+            $result = AddTelegramUser($userData);
 
             return $result;
         }
@@ -243,5 +242,39 @@ function CheckTelegramUser($userData){
     catch(Exception $e){
         return json_encode(array('error' => $e->getMessage()));
     }
+}
+
+function AddTelegramUser($userData){
+
+    try {
+        // Standardwerte definieren
+        $defaultLevel = '50';
+        $defaultTelegramState = '30';
+
+        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+        
+        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_state, user_photo, id_telegram) VALUES (?,?,?,?,?,?,?);");
+    
+        $stmt->bind_param("sssiisi", $userData['username'], $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $userData['photo_url'], $userData['id']);
+    
+        $stmt->execute();
+
+        // Eingefügte ID auslesen
+        $stmt = $_db->prepare("SELECT LAST_INSERT_ID();");
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        $userID = $array[0]['LAST_INSERT_ID()'];
+
+        // Userdaten auslesen und dann Session starten
+        return $userData = GetUserData($userID);
+    }
+    catch(Exception $e){
+        return $e->getMessage();
+    }
+
 }
 ?>
