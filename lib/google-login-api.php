@@ -21,7 +21,7 @@ class GoogleLoginApi
 	}
 
 	public function GetUserProfileInfo($access_token) {	
-		$url = 'https://www.googleapis.com/oauth2/v2/userinfo?fields=name,email,gender,id,picture,verified_email';			
+		$url = 'https://www.googleapis.com/oauth2/v2/userinfo?fields=given_name,family_name,name,email,gender,id,picture,verified_email';			
 		
 		$ch = curl_init();		
 		curl_setopt($ch, CURLOPT_URL, $url);		
