@@ -1,18 +1,28 @@
 <?php
-// Goolge API Daten einbinden
-$user = posix_getpwuid(posix_getuid()); 
-$homedir = $user['dir']; 
-require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
-
-$bot_username = BOT_USERNAME;
+// AJAX Input decodieren
+$jsonTx = file_get_contents("php://input");
+var_dump($jsonTx);
+// Überprüfen ob eine Action gefordert wird
+if($jsonTx->action != ""){
+    try {
+        $function = $jsonTx->action;
+        echo $function($jsonTx->data, $userID); // Funktion ausführen
+        exit;
+    }
+    catch(Exception $e){
+        $ret = array('error' => 'Action not available');
+        echo json_encode($ret);
+        exit;
+    }
+    exit;
+}
 ?>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login Biblewiki</title>
+    <title>Registrieren Biblewiki</title>
 
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
@@ -24,7 +34,7 @@ $bot_username = BOT_USERNAME;
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <!-- Include the above in your HEAD tag -->
     
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="css/style.css" rel="stylesheet" />
 
 </head>
@@ -35,23 +45,19 @@ $bot_username = BOT_USERNAME;
         <center>
             <div class="middle">
                 <div id="login">
-
-
                 
                 <form action="javascript:void(0);" method="get">
-                    <!-- Telegram Login Button -->
-                    <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $bot_username ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
-                    <!-- Google Login Button -->
-                    <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
-                    
                     <fieldset class="clearfix">
-
-                        <p><span class="fa fa-user"></span><input id="benutzername" type="text"  Placeholder="Benutzername" required></p> 
-                        <p><span class="fa fa-lock"></span><input id="passwort" type="password"  Placeholder="Passwort" required></p>
+                    
+                        <p><span class="fa fa-user"></span><input id="benutzername" type="text"  Placeholder="Benutzername" disabled></p>
+                        <p><span class="fa fa-user"></span><input id="firstname" type="text"  Placeholder="Vorname" required></p>
+                        <p><span class="fa fa-user"></span><input id="lastname" type="text"  Placeholder="Nachname" required></p>
+                        <p><span class="fa fa-envelope "></span><input id="email" type="email"  Placeholder="Email" required></p>
+                        <p><span class="fa fa-lock"></span><input id="passwort" type="password"  Placeholder="Passwort wiederholen" required></p>
             
                         <div>
-                            <span style="width:52%; text-align:left;  display: inline-block;"><a class="small-text" href="#">Passwort vergessen?</a></span>
-                            <span style="width:46%; text-align:right;  display: inline-block;"><input id="login-btn" type="submit" value="Login"></span>
+                            <span style="width:52%; text-align:left;  display: inline-block;"></span>
+                            <span style="width:46%; text-align:right;  display: inline-block;"><input id="login-btn" type="submit" value="Anmelden"></span>
                         </div>
                         
                     </fieldset>
@@ -96,11 +102,9 @@ $bot_username = BOT_USERNAME;
 		        success: function(data){
 			        if(data['error'] !== undefined){
 				        alert(data['error']);
-			        }else if(data['action'] === 'Register'){
-                        window.location.replace("register.php");
-                    }
+			        }
 			        else {
-                        window.location.replace("https://edit.biblewiki.one");
+                window.location.replace("https://edit.biblewiki.one");
 			        }
 		        }
 	        });

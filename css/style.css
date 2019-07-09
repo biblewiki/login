@@ -118,13 +118,18 @@ fieldset{
     margin: 0;
 
 }
-#login form input[type="text"], input[type="password"] {
+#login form input[type="text"], input[type="password"], input[type="email"] {
 	background-color: #fff;
 	border-radius: 0px 3px 3px 0px;
 	color: #000;
 	margin-bottom: 1em;
 	padding: 0 16px;
 	width: 200px;
+}
+
+#login form input:disabled{
+  background-color: #ccc;
+  color:#fff;
 }
 
 #login form input[type="submit"] {

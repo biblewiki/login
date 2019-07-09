@@ -63,7 +63,7 @@ function CheckLoginWeb($data){
 
             return json_encode(array('error' => $result));
         } else {
-            return json_encode(array('action' => 'Add User'));
+            return json_encode(array('action' => 'Register'));
         }
     }
     catch(Exception $e){
