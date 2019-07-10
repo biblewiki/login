@@ -31,7 +31,7 @@ try {
   $result = CheckTelegramUser($auth_data);
   echo $result;
   if ($result === "Session started"){
-   // header('Location: https://edit.biblewiki.one');
+    header('Location: https://edit.biblewiki.one');
   }
 
 } catch (Exception $e) {
