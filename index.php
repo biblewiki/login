@@ -83,7 +83,7 @@ $bot_username = BOT_USERNAME;
             
 
             var jsonTx = {
-		        action : 'CheckLoginWeb',
+		        action : 'CheckPasswordUser',
 		        data : { 'benutzername' : benutzername,
                         'passwort' : passwort
 		        }
@@ -98,6 +98,7 @@ $bot_username = BOT_USERNAME;
 			        if(data['error'] !== undefined){
 				        alert(data['error']);
 			        }else if(data['action'] === 'Register'){
+                        document.cookie = 'username = ' + JSON.stringify(benutzername);
                         window.location.replace("register.php");
                     }
 			        else {

@@ -1,21 +1,6 @@
 <?php
-// AJAX Input decodieren
-$jsonTx = file_get_contents("php://input");
-var_dump($jsonTx);
-// Überprüfen ob eine Action gefordert wird
-if($jsonTx->action != ""){
-    try {
-        $function = $jsonTx->action;
-        echo $function($jsonTx->data, $userID); // Funktion ausführen
-        exit;
-    }
-    catch(Exception $e){
-        $ret = array('error' => 'Action not available');
-        echo json_encode($ret);
-        exit;
-    }
-    exit;
-}
+$benutzername = json_decode($_COOKIE['username']);
+//echo $passwort;
 ?>
 <html lang="en">
 <head>
@@ -49,11 +34,12 @@ if($jsonTx->action != ""){
                 <form action="javascript:void(0);" method="get">
                     <fieldset class="clearfix">
                     
-                        <p><span class="fa fa-user"></span><input id="benutzername" type="text"  Placeholder="Benutzername" disabled></p>
+                        <p><span class="fa fa-user"></span><input id="benutzername" type="text"  Placeholder="Benutzername" value="<?php echo $benutzername ?>" disabled></p>
                         <p><span class="fa fa-user"></span><input id="firstname" type="text"  Placeholder="Vorname" required></p>
                         <p><span class="fa fa-user"></span><input id="lastname" type="text"  Placeholder="Nachname" required></p>
                         <p><span class="fa fa-envelope "></span><input id="email" type="email"  Placeholder="Email" required></p>
-                        <p><span class="fa fa-lock"></span><input id="passwort" type="password"  Placeholder="Passwort wiederholen" required></p>
+                        <p><span class="fa fa-lock"></span><input id="passwort" type="password"  Placeholder="Passwort" required></p>
+                        <p><span class="fa fa-lock"></span><input id="passwort_retype" type="password"  Placeholder="Passwort wiederholen" required></p>
             
                         <div>
                             <span style="width:52%; text-align:left;  display: inline-block;"></span>
@@ -84,30 +70,43 @@ if($jsonTx->action != ""){
         $('#login-btn').click(function(){
 
             var benutzername = $('#benutzername').val();
+            var vorname = $('#firstname').val();
+            var nachname = $('#lastname').val();
+            var email = $('#email').val();
             var passwort = $('#passwort').val();
+            var passwort2 = $('#passwort_retype').val();
+
+            if (passwort === passwort2){
             
 
-            var jsonTx = {
-		        action : 'CheckLoginWeb',
-		        data : { 'benutzername' : benutzername,
-                        'passwort' : passwort
-		        }
-	        };
+                var jsonTx = {
+		            action : 'AddPasswordUser',
+		            data : { 'benutzername' : benutzername,
+                            'vorname' : vorname,
+                            'nachname' : nachname,
+                            'email' : email,
+                            'passwort' : passwort,
+                            'passwort2' : passwort2
+		            }
+	            };
 
-	        $.ajax({
-	        	type: 	'POST',
-		        url: 	'async/login.php',
-		        dataType: 'json',
-		        data: JSON.stringify(jsonTx),
-		        success: function(data){
-			        if(data['error'] !== undefined){
-				        alert(data['error']);
-			        }
-			        else {
-                window.location.replace("https://edit.biblewiki.one");
-			        }
-		        }
-	        });
+	            $.ajax({
+    	        	type: 	'POST',
+	    	        url: 	'async/login.php',
+		            dataType: 'json',
+		            data: JSON.stringify(jsonTx),
+		            success: function(data){
+			            if(data['error'] !== undefined){
+				            alert(data['error']);
+			            }
+			            else {
+                            window.location.replace("https://edit.biblewiki.one");
+			            }   
+		            }
+	            });
+            } else {
+                alert ('Passwörter stimmen nicht überein');
+            }
         });
     });
 
