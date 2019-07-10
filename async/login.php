@@ -82,7 +82,7 @@ function CheckPassword($password, $passwordCheck, $userID){
 
         return $userData;
     } else {
-        LoginLog($userID, 'Password', $error = 'Wrong Password');
+        UserLog($userID, 'Password', $error = 'Wrong Password');
         return 'Wrong Password';
     }
 
@@ -133,20 +133,19 @@ function SessionStart($userID, $userData, $method){
     $_SESSION["level"] = $userData[0]['user_level'];
     $_SESSION["picture"] = $userData[0]['user_picture'];
 
-    $result = LoginLog($userID, $method);
+    $result = UserLog($userID, $method);
 
     return "Session started";
 }
 
-function LoginLog($userID, $method, $error = ''){
+function UserLog($userID, $method, $action = 'login', $error = ''){
         
         $hostname = gethostname();
-        $action = 'login';
-
+        
         $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
         $stmt = $_db->getDB()->stmt_init();
         
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".login_log (id_user, ip, hostname, browser, method, action, error) VALUES (?,?,?,?,?,?,?);");
+        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".user_log (id_user, ip, hostname, browser, method, action, error) VALUES (?,?,?,?,?,?,?);");
     
         $stmt->bind_param("issssss", $userID, $_SERVER['REMOTE_ADDR'], $hostname, $_SERVER['HTTP_USER_AGENT'], $method, $action, $error);
     
@@ -220,6 +219,8 @@ function AddGoogleUser($userData){
 
         $userID = $array[0]['LAST_INSERT_ID()'];
 
+        UserLog($userID, 'Google', 'Add Google User');
+
         // Userdaten auslesen und dann Session starten
         return $userData = GetUserData($userID, 'Google');
     }
@@ -280,12 +281,15 @@ function AddTelegramUser($userData){
         $defaultLevel = '50';
         $defaultTelegramState = '30';
 
+        $username = (isset($userData['username']) ? $userData['username'] : $userData['id']);
+        $photo_url = (isset($userData['photo_url']) ? $userData['photo_url'] : 'img/silhouette.png');
+
         $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
         $stmt = $_db->getDB()->stmt_init();
         
         $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_state, user_picture, id_telegram) VALUES (?,?,?,?,?,?,?);");
     
-        $stmt->bind_param("sssiisi", $userData['username'], $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $userData['photo_url'], $userData['id']);
+        $stmt->bind_param("sssiisi", $username, $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $photo_url, $userData['id']);
     
         $stmt->execute();
 
@@ -297,6 +301,8 @@ function AddTelegramUser($userData){
         $array = db::getTableAsArray($stmt);
 
         $userID = $array[0]['LAST_INSERT_ID()'];
+
+        UserLog($userID, 'Telegram', 'Add Telegram User');
 
         // Userdaten auslesen und dann Session starten
         return $userData = GetUserData($userID, 'Telegram');
