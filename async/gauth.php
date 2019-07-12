@@ -25,7 +25,7 @@ if(isset($_GET['code'])) {
 		
 		// Wenn die Session gestartet wurde, weiterleiten
 		if ($result === "Session started"){
-			header('Location: https://edit.biblewiki.one');
+			header('Location: https://'.$_SERVER['HTTP_HOST'].'/async/refer.php?login=true');
 		} else {
 			header('Location: ../');
 		}

@@ -1,9 +1,12 @@
 <?php
 session_start();
 
-if (!$_SESSION['login']){
+if ($_SESSION['login']){
+    $GLOBALS['loggedin'] = true;
+} else{
     session_destroy();
-    header('Location: login.joel.biblewiki.one');
+    $GLOBALS['loggedin'] = false;
+    header('Location: https://'.$_SERVER['HTTP_HOST']);
 }
 
 ?>

@@ -28,6 +28,10 @@ $bot_username = BOT_USERNAME;
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <link href="css/style.css" rel="stylesheet" />
 
+    <!-- Inlude Toast Notifications -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="/js/notifications.js"></script>
 </head>
 <body>
     
@@ -67,7 +71,6 @@ $bot_username = BOT_USERNAME;
                     <img src="img/biblewiki_weiss.svg" height="300px">
                     <div class="clearfix"></div>
                 </div>
-      
             </div>
         </center>
     </div>
@@ -96,7 +99,9 @@ $bot_username = BOT_USERNAME;
 		        data: JSON.stringify(jsonTx),
 		        success: function(data){
 			        if(data['error'] !== undefined){
-				        alert(data['error']);
+
+                        notification('error', data['error']);
+				        
 			        }else if(data['action'] === 'Register'){
                         document.cookie = 'username = ' + JSON.stringify(benutzername);
                         window.location.replace("register.php");

@@ -1,0 +1,23 @@
+{"error": {
+  "login_failed": {
+    "title" : "Login fehlgeschlagen",
+    "text" : "Versuchen Sie es später noch einmal oder kontaktieren Sie den Administrator."
+  },
+  "wrong_password": {
+    "title" : "Login fehlgeschlagen",
+    "text" : "Falsches Passwort."
+  }
+},
+
+"success": {
+
+},
+
+"info": {
+
+},
+
+"warning": {
+
+}
+}

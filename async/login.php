@@ -141,7 +141,7 @@ function CheckPassword($password, $passwordCheck, $userID){
         return $userData;
     } else {
         UserLog($userID, 'Password', $error = 'Wrong Password');
-        return 'Wrong Password';
+        return 'wrong_password';
     }
 
 }

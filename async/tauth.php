@@ -29,9 +29,9 @@ function checkTelegramAuthorization($auth_data) {
 try {
   $auth_data = checkTelegramAuthorization($_GET);
   $result = CheckTelegramUser($auth_data);
-  echo $result;
+  
   if ($result === "Session started"){
-    header('Location: https://edit.biblewiki.one');
+    header('Location: https://'.$_SERVER['HTTP_HOST'].'/async/refer.php?login=true');
   }
 
 } catch (Exception $e) {
