@@ -1,6 +1,6 @@
 <?php
+require_once('async/settings.php');
 $benutzername = json_decode($_COOKIE['username']);
-//echo $passwort;
 ?>
 <html lang="en">
 
@@ -102,7 +102,7 @@ $benutzername = json_decode($_COOKIE['username']);
                             if (data['error'] !== undefined) {
                                 alert(data['error']);
                             } else {
-                                window.location.replace("https://edit.biblewiki.one");
+                                window.location.replace("<?php echo EDIT_HOST ?>");
                             }
                         }
                     });

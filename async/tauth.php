@@ -30,7 +30,7 @@ try {
   $auth_data = checkTelegramAuthorization($_GET);
   $result = CheckTelegramUser($auth_data);
   
-  if ($result === "Session started"){
+  if ($result === "loggedin"){
     header('Location: https://'.$_SERVER['HTTP_HOST'].'/async/refer.php?login=true');
   }
 

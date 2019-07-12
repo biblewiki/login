@@ -1,8 +1,8 @@
 <?php
 // User Datenbank Logindaten einbinden
-$user = posix_getpwuid(posix_getuid()); 
-$homedir = $user['dir']; 
-require_once ($homedir.'/config/biblewiki/db_biblewiki_users.php');
+$user = posix_getpwuid(posix_getuid());
+$homedir = $user['dir'];
+require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 
 // Datenbank Classe einbinden
 require_once dirname(__FILE__) . "/../lib/db.class.php";
@@ -11,13 +11,12 @@ require_once dirname(__FILE__) . "/../lib/db.class.php";
 $jsonTx = json_decode(file_get_contents("php://input"));
 
 // Überprüfen ob eine Action gefordert wird
-if($jsonTx->action != ""){
+if ($jsonTx->action != "") {
     try {
         $function = $jsonTx->action;
         echo $function($jsonTx->data); // Funktion ausführen
         exit;
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         $ret = array('error' => 'Action not available');
         echo json_encode($ret);
         exit;
@@ -35,25 +34,27 @@ if($jsonTx->action != ""){
 ##############################################################################
 
 // Logindaten Web überprüfen
-function CheckPasswordUser($data){
+function CheckPasswordUser($data)
+{
 
     // Passwort Versalzen
     $salt = '_biblewikiloginsalt255%';
-    $salt_passwort = $data->passwort.$salt;
+    $salt_passwort = $data->passwort . $salt;
     $user_passwort = hash('sha256', $salt_passwort);
 
     try {
         // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
+
         // Select definieren
-        $stmt = $_db->prepare("SELECT
-        ".USER_DB.".users.user_password,
-        ".USER_DB.".users.user_ID
-        FROM ".USER_DB.".users 
-        WHERE ".USER_DB.".users.user_username = ?
-        GROUP BY ".USER_DB.".users.user_ID;"
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.user_password,
+        " . USER_DB . ".users.user_ID
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.user_username = ?
+        GROUP BY " . USER_DB . ".users.user_ID;"
         );
 
         $stmt->bind_param("s", $data->benutzername);
@@ -63,24 +64,28 @@ function CheckPasswordUser($data){
         $array = db::getTableAsArray($stmt);
 
         // Überprüfen ob Benutzer existiert
-        if (isset($array[0]['user_ID'])){
+        if (isset($array[0]['user_ID'])) {
             $result = CheckPassword($array[0]['user_password'], $user_passwort, $array[0]['user_ID']);
 
-            return json_encode(array('error' => $result));
+            if ($result === 'loggedin') {
+                return json_encode(array('success' => $result));
+            } else {
+                return json_encode(array('error' => $result));
+            }
         } else {
             return json_encode(array('action' => 'Register'));
         }
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return json_encode(array('error' => $e->getMessage()));
     }
 }
 
-function AddPasswordUser($data){
+function AddPasswordUser($data)
+{
 
     // Passwort Versalzen
     $salt = '_biblewikiloginsalt255%';
-    $salt_passwort = $data->passwort.$salt;
+    $salt_passwort = $data->passwort . $salt;
     $user_passwort = hash('sha256', $salt_passwort);
 
     try {
@@ -90,13 +95,13 @@ function AddPasswordUser($data){
         $defaultUserState = '30';
         $defaultPicture = 'img/silhouette.png';
 
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?);");
-    
-        $stmt->bind_param("sssisisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $defaultEmailState, $data->passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
-    
+
+        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?);");
+
+        $stmt->bind_param("sssisisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
+
         $stmt->execute();
 
         // Eingefügte ID auslesen
@@ -111,8 +116,8 @@ function AddPasswordUser($data){
         UserLog($userID, 'Password', 'Add Password User');
 
         // Überprüfen ob Benutzer existiert
-        if ($userID > 0){
-            
+        if ($userID > 0) {
+
             // Userdaten auslesen und dann Session starten
             $userData = GetUserData($userID, 'Password');
 
@@ -120,21 +125,18 @@ function AddPasswordUser($data){
         } else {
             return json_encode(array('error' => 'Failed'));
         }
-
-
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return $e->getMessage();
     }
-
 }
 
 
 // Passwort überprüfen
-function CheckPassword($password, $passwordCheck, $userID){
+function CheckPassword($password, $passwordCheck, $userID)
+{
 
     // Überprüfen ob das Passwort stimmt
-    if($password === $passwordCheck){
+    if ($password === $passwordCheck) {
 
         $userData = GetUserData($userID, 'Password');
 
@@ -143,7 +145,6 @@ function CheckPassword($password, $passwordCheck, $userID){
         UserLog($userID, 'Password', $error = 'Wrong Password');
         return 'wrong_password';
     }
-
 }
 
 ##############################################################################
@@ -151,18 +152,20 @@ function CheckPassword($password, $passwordCheck, $userID){
 ##############################################################################
 
 // Überprüfen ob Google User schon existiert
-function CheckGoogleUser($userData){
+function CheckGoogleUser($userData)
+{
     try {
 
         // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
+
         // Select definieren
-        $stmt = $_db->prepare("SELECT
-        ".USER_DB.".users.user_ID
-        FROM ".USER_DB.".users 
-        WHERE ".USER_DB.".users.id_google = ?;"
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.user_ID
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.id_google = ?;"
         );
 
         $stmt->bind_param("s", $userData['id']);
@@ -172,37 +175,37 @@ function CheckGoogleUser($userData){
         $array = db::getTableAsArray($stmt);
 
         // Überprüfen ob Benutzer existiert
-        if (isset($array[0]['user_ID'])){
+        if (isset($array[0]['user_ID'])) {
             $result = GetUserData($array[0]['user_ID'], 'Google');
 
             return $result;
-        // Wenn nicht, wird er erstellt
+            // Wenn nicht, wird er erstellt
         } else {
-            
+
             $result = AddGoogleUser($userData);
 
             return $result;
         }
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return $e->getMessage();
     }
 }
 
-function AddGoogleUser($userData){
+function AddGoogleUser($userData)
+{
     try {
         // Standardwerte definieren
         $defaultLevel = '50';
         $defaultGoogleState = '50';
         $defaultGoogleEmailState = '100';
 
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_state, user_picture, id_google) VALUES (?,?,?,?,?,?,?,?,?);");
-    
+
+        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_state, user_picture, id_google) VALUES (?,?,?,?,?,?,?,?,?);");
+
         $stmt->bind_param("sssisiisi", $userData['email'], $userData['given_name'], $userData['family_name'], $defaultLevel, $userData['email'], $defaultGoogleEmailState, $defaultGoogleState, $userData['picture'], $userData['id']);
-    
+
         $stmt->execute();
 
         // Eingefügte ID auslesen
@@ -218,11 +221,9 @@ function AddGoogleUser($userData){
 
         // Userdaten auslesen und dann Session starten
         return $userData = GetUserData($userID, 'Google');
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return $e->getMessage();
     }
-
 }
 
 ##############################################################################
@@ -230,18 +231,20 @@ function AddGoogleUser($userData){
 ##############################################################################
 
 // Überprüfen ob Telegram User schon existiert
-function CheckTelegramUser($userData){
+function CheckTelegramUser($userData)
+{
     try {
 
         // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
+
         // Select definieren
-        $stmt = $_db->prepare("SELECT
-        ".USER_DB.".users.user_ID
-        FROM ".USER_DB.".users 
-        WHERE ".USER_DB.".users.id_telegram = ?;"
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.user_ID
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.id_telegram = ?;"
         );
 
         $stmt->bind_param("s", $userData['id']);
@@ -251,23 +254,23 @@ function CheckTelegramUser($userData){
         $array = db::getTableAsArray($stmt);
 
         // Überprüfen ob Benutzer existiert
-        if (isset($array[0]['user_ID'])){
+        if (isset($array[0]['user_ID'])) {
             $result = GetUserData($array[0]['user_ID'], 'Telegram');
-            
+
             return $result;
-        // Wenn nicht, wird er erstellt
+            // Wenn nicht, wird er erstellt
         } else {
             $result = AddTelegramUser($userData);
 
             return $result;
         }
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return json_encode(array('error' => $e->getMessage()));
     }
 }
 
-function AddTelegramUser($userData){
+function AddTelegramUser($userData)
+{
 
     try {
         // Standardwerte definieren
@@ -277,13 +280,13 @@ function AddTelegramUser($userData){
         $username = (isset($userData['username']) ? $userData['username'] : $userData['id']);
         $photo_url = (isset($userData['photo_url']) ? $userData['photo_url'] : 'img/silhouette.png');
 
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".users (user_username, user_firstname, user_lastname, user_level, user_state, user_picture, id_telegram) VALUES (?,?,?,?,?,?,?);");
-    
+
+        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_state, user_picture, id_telegram) VALUES (?,?,?,?,?,?,?);");
+
         $stmt->bind_param("sssiisi", $username, $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $photo_url, $userData['id']);
-    
+
         $stmt->execute();
 
         // Eingefügte ID auslesen
@@ -299,11 +302,9 @@ function AddTelegramUser($userData){
 
         // Userdaten auslesen und dann Session starten
         return $userData = GetUserData($userID, 'Telegram');
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return $e->getMessage();
     }
-
 }
 
 ##############################################################################
@@ -311,39 +312,41 @@ function AddTelegramUser($userData){
 ##############################################################################
 
 // Benutzerinfos abrufen
-function GetUserData($userID, $method){
+function GetUserData($userID, $method)
+{
     try {
         // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
-        
+
         // Select definieren
-        $stmt = $_db->prepare("SELECT
-        ".USER_DB.".users.user_ID,
-        ".USER_DB.".users.user_firstname,
-        ".USER_DB.".users.user_lastname,
-        ".USER_DB.".users.user_level,
-        ".USER_DB.".users.user_picture
-        FROM ".USER_DB.".users 
-        WHERE ".USER_DB.".users.user_ID = ?;"
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.user_ID,
+        " . USER_DB . ".users.user_firstname,
+        " . USER_DB . ".users.user_lastname,
+        " . USER_DB . ".users.user_level,
+        " . USER_DB . ".users.user_picture
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.user_ID = ?;"
         );
-    
+
         $stmt->bind_param("i", $userID);
-    
+
         $stmt->execute();
 
         $array = db::getTableAsArray($stmt);
 
         $result = SessionStart($userID, $array, $method);
-    
+
         return $result;
-    }
-    catch(Exception $e){
+    } catch (Exception $e) {
         return $e->getMessage();
     }
 }
 
-function SessionStart($userID, $userData, $method){
+function SessionStart($userID, $userData, $method)
+{
 
     // Session starten
     session_start();
@@ -355,21 +358,29 @@ function SessionStart($userID, $userData, $method){
     $_SESSION["level"] = $userData[0]['user_level'];
     $_SESSION["picture"] = $userData[0]['user_picture'];
 
+    setcookie ("LOGGEDIN", 'true', time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie ("ID", $userID, time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie ("FIRSTNAME", $_SESSION["firstname"], time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie ("LASTNAME", $_SESSION["lastname"], time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie ("LEVEL", $_SESSION["level"], time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie ("PICTURE", $_SESSION["picture"], time()+3600*24, '/', ".biblewiki.one", 0 );
+
     $result = UserLog($userID, $method);
 
-    return "Session started";
+    return "loggedin";
 }
 
-function UserLog($userID, $method, $action = 'login', $error = ''){
-        
-        $hostname = gethostname();
-        
-        $_db = new db(USER_DB_URL,USER_DB_USER,USER_DB_PW,USER_DB);
-        $stmt = $_db->getDB()->stmt_init();
-        
-        $stmt = $_db->prepare("INSERT INTO ".USER_DB.".user_log (id_user, ip, hostname, browser, method, action, error) VALUES (?,?,?,?,?,?,?);");
-    
-        $stmt->bind_param("issssss", $userID, $_SERVER['REMOTE_ADDR'], $hostname, $_SERVER['HTTP_USER_AGENT'], $method, $action, $error);
-    
-        $stmt->execute();
+function UserLog($userID, $method, $action = 'login', $error = '')
+{
+
+    $hostname = gethostname();
+
+    $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+    $stmt = $_db->getDB()->stmt_init();
+
+    $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".user_log (id_user, ip, hostname, browser, method, action, error) VALUES (?,?,?,?,?,?,?);");
+
+    $stmt->bind_param("issssss", $userID, $_SERVER['REMOTE_ADDR'], $hostname, $_SERVER['HTTP_USER_AGENT'], $method, $action, $error);
+
+    $stmt->execute();
 }

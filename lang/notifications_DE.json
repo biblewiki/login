@@ -19,6 +19,13 @@
             "text": "Sie haben sich erfolgreich eingeloggt."
         }
     },
-    "info": {},
+    "info": {
+        "_comment": "Login",
+
+        "login_expired": {
+            "title": "Session abgelaufen",
+            "text": "Melden Sie sich erneut an."
+        }
+    },
     "warning": {}
 }

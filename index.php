@@ -7,6 +7,8 @@ require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
 
 $bot_username = BOT_USERNAME;
+
+session_start();
 ?>
 
 <html lang="en">
@@ -39,6 +41,7 @@ $bot_username = BOT_USERNAME;
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
+    <script src="<?php echo EDIT_HOST ?>/js/cookie.js"></script>
 
 </head>
 
@@ -93,7 +96,6 @@ $bot_username = BOT_USERNAME;
                 var benutzername = $('#benutzername').val();
                 var passwort = $('#passwort').val();
 
-
                 var jsonTx = {
                     action: 'CheckPasswordUser',
                     data: {
@@ -109,14 +111,16 @@ $bot_username = BOT_USERNAME;
                     data: JSON.stringify(jsonTx),
                     success: function(data) {
                         if (data['error'] !== undefined) {
-
                             notification('error', data['error']);
-
                         } else if (data['action'] === 'Register') {
                             document.cookie = 'username = ' + JSON.stringify(benutzername);
-                            window.location.replace("register.php");
+                            window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
                         } else {
-                            window.location.replace("https://edit.biblewiki.one");
+                            if (readCookie('LOGGEDIN')){
+                                window.location.replace("<?php echo EDIT_HOST ?>");
+                             } else {
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + "?login=error");
+                             }
                         }
                     }
                 });

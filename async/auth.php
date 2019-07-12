@@ -1,10 +1,7 @@
 <?php
+require_once('settings.php');
 session_start();
 
-if ($_SESSION['login']){
-    $GLOBALS['loggedin'] = true;
-} else{
-    session_destroy();
-    $GLOBALS['loggedin'] = false;
-    header('Location: https://'.$_SERVER['HTTP_HOST']);
+if (!$_SESSION['login'] || !$_COOKIE['LOGGEDIN']) {
+    header('Location: '.LOGIN_HOST.'/logout.php?login=expired');
 }

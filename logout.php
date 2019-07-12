@@ -37,6 +37,23 @@ function LoginLog($userID, $method, $error = '')
 
 var_dump($_SESSION);
 
+// COOKIES löschen
+unset($_COOKIE['LOGGEDIN']);
+setcookie ("LOGGEDIN", false, time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['ID']);
+setcookie ("ID", '', time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['FIRSTNAME']);
+setcookie ("FIRSTNAME", 'test', time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['LASTNAME']);
+setcookie ("LASTNAME", '', time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['LEVEL']);
+setcookie ("LEVEL", '', time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['PICTURE']);
+setcookie ("PICTURE", '', time() - 3600, '/', ".biblewiki.one", 0 );
 
-//header('Location: /');
+if (isset($_GET['login'])){
+    header('Location: /?login='.$_GET['login']);
+} else {
+    //header('Location: /');
+}
 session_destroy();

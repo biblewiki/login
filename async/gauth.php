@@ -24,7 +24,7 @@ if (isset($_GET['code'])) {
 		$result = CheckGoogleUser($user_info);
 
 		// Wenn die Session gestartet wurde, weiterleiten
-		if ($result === "Session started") {
+		if ($result === "loggedin") {
 			header('Location: https://' . $_SERVER['HTTP_HOST'] . '/async/refer.php?login=true');
 		} else {
 			header('Location: ../');
