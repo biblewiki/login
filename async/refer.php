@@ -1,11 +1,11 @@
 <?php
-
-require_once('auth.php');
+require_once('auth'.php);
+require_once('settings.php');
 
 $loggedIn = $_GET['login'];
 
 if ($loggedIn && $GLOBALS['loggedin']) {
-    header('Location: https://edit.biblewiki.one');
+    header('Location: '.EDIT_HOST);
 } else {
-    header('Location: https://' . $_SERVER['HTTP_HOST'] . '?login=failed');
+    header('Location: '.LOGIN_HOST.'?login=error');
 }

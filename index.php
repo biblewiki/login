@@ -1,8 +1,10 @@
 <?php
-// Goolge API Daten einbinden
+// Goolge und Telegram API Daten einbinden
 $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
+
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
 
 $bot_username = BOT_USERNAME;
 ?>
@@ -35,8 +37,8 @@ $bot_username = BOT_USERNAME;
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="/css/notifications.css" rel="stylesheet" />
-    <script src="/js/notifications.js"></script>
+    <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
 
 </head>
 
