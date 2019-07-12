@@ -32,11 +32,9 @@ function notification(type, code){
                 "timeOut": "0",
                 "extendedTimeout": "0"
             });
-            toastr.options.positionClass = 'toast-bottom-right'
         } else {
             //Notification anzeigen. Wird nicht von selbst ausgeblendet
             toastr[type](notification.text, notification.title);
-            toastr.options.positionClass = 'toast-bottom-right'
         }
 
 
