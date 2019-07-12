@@ -8,5 +8,3 @@ if ($_SESSION['login']){
     $GLOBALS['loggedin'] = false;
     header('Location: https://'.$_SERVER['HTTP_HOST']);
 }
-
-?>

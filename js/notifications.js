@@ -1,16 +1,17 @@
-$(function () {
+$(function() {
 
     var login = getUrlVars()["login"];
 
-    if (login === 'failed'){
-        notification('error', 'login_failed');
+    if (typeof login !== 'undefined') {
+        notification(login, 'login');
+        console.log(login);
     }
 });
 
 // URL Parameter auslesen
-function getUrlVars(){
+function getUrlVars() {
     var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         vars[key] = value;
     });
 
@@ -18,15 +19,15 @@ function getUrlVars(){
 }
 
 // Notifications anzeigen
-function notification(type, code){
+function notification(type, code) {
 
     // JSON einlesen
-    $.getJSON( "js/notifications_DE.json", function( data ) {
-        
+    $.getJSON("js/notifications_DE.json", function(data) {
+
         // Notification Parameter auslesen
         var notification = data[type][code];
 
-        if (type === 'error'){
+        if (type === 'error') {
             //Notification anzeigen. Wird nicht von selbst ausgeblendet
             toastr[type](notification.text, notification.title, {
                 "timeOut": "0",
@@ -39,6 +40,6 @@ function notification(type, code){
 
 
     });
-    
-    
+
+
 }

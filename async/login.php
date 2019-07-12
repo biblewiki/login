@@ -373,5 +373,3 @@ function UserLog($userID, $method, $action = 'login', $error = ''){
     
         $stmt->execute();
 }
-
-?>

@@ -1,23 +1,24 @@
-{"error": {
-  "login_failed": {
-    "title" : "Login fehlgeschlagen",
-    "text" : "Versuchen Sie es später noch einmal oder kontaktieren Sie den Administrator."
-  },
-  "wrong_password": {
-    "title" : "Login fehlgeschlagen",
-    "text" : "Falsches Passwort."
-  }
-},
+{
+    "error": {
+        "_comment": "Login",
 
-"success": {
+        "login": {
+            "title": "Login fehlgeschlagen",
+            "text": "Versuchen Sie es später noch einmal oder kontaktieren Sie den Administrator."
+        },
+        "wrong_password": {
+            "title": "Login fehlgeschlagen",
+            "text": "Falsches Passwort."
+        }
+    },
+    "success": {
+        "_comment": "Login",
 
-},
-
-"info": {
-
-},
-
-"warning": {
-
-}
+        "login": {
+            "title": "Login erfolgreich",
+            "text": "Sie haben sich erfolgreich eingeloggt."
+        }
+    },
+    "info": {},
+    "warning": {}
 }
