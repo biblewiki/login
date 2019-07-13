@@ -116,11 +116,8 @@ session_start();
                             document.cookie = 'username = ' + JSON.stringify(benutzername);
                             window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
                         } else {
-                            if (readCookie('LOGGEDIN')){
-                                window.location.replace("<?php echo EDIT_HOST ?>");
-                             } else {
-                                window.location.replace("<?php echo LOGIN_HOST ?>" + "?login=error");
-                             }
+                            window.location.replace('/async/refer.php?login=true');
+                         
                         }
                     }
                 });

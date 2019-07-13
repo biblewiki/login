@@ -17,6 +17,10 @@
         "login": {
             "title": "Login erfolgreich",
             "text": "Sie haben sich erfolgreich eingeloggt."
+        },
+        "logout": {
+            "title": "Erfolgreich ausgeloggt",
+            "text": "Sie haben sich erfolgreich ausgeloggt."
         }
     },
     "info": {

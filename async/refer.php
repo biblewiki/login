@@ -4,7 +4,7 @@ require_once('settings.php');
 
 $loggedIn = $_GET['login'];
 
-if ($loggedIn && $_COOKIE['LOGGEDIN']) {
+if ($loggedIn && $_COOKIE['LOGGEDIN'] && $_SESSION['loggedin']) {
     header('Location: '.EDIT_HOST);
 } else {
     header('Location: '.LOGIN_HOST.'?login=error');
