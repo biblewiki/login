@@ -6,7 +6,7 @@ require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
 // Google API einbinden
 require_once('../lib/google-login-api.php');
 // Login Check einbinden
-require_once('login.php');
+require_once('db_connect.php');
 
 
 // Google passes a parameter 'code' in the Redirect Url

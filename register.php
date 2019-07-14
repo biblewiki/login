@@ -1,5 +1,9 @@
 <?php
 require_once('async/settings.php');
+
+// Include Settings
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+
 $benutzername = json_decode($_COOKIE['username']);
 ?>
 <html lang="en">
@@ -13,12 +17,11 @@ $benutzername = json_decode($_COOKIE['username']);
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!------ Include the above in your HEAD tag ---------->
 
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-    <!-- Include the above in your HEAD tag -->
+    <!-- Inlude Toast Notifications -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="css/style.css" rel="stylesheet" />
@@ -95,19 +98,19 @@ $benutzername = json_decode($_COOKIE['username']);
 
                     $.ajax({
                         type: 'POST',
-                        url: 'async/login.php',
+                        url: 'async/db_connect.php',
                         dataType: 'json',
                         data: JSON.stringify(jsonTx),
                         success: function(data) {
                             if (data['error'] !== undefined) {
-                                alert(data['error']);
+                                notification('error', data['error']);
                             } else {
-                                window.location.replace("<?php echo EDIT_HOST ?>");
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?login=confirm_email');
                             }
                         }
                     });
                 } else {
-                    alert('Passwörter stimmen nicht überein');
+                    notification('error', 'passwords_missmatch');
                 }
             });
         });

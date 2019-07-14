@@ -4,7 +4,8 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 
-require_once('log.php');
+// Log-Script einbinden
+require_once dirname(__FILE__) . '/log.php';
 
 // Datenbank Classe einbinden
 require_once dirname(__FILE__) . "/../lib/db.class.php";
@@ -52,8 +53,10 @@ function CheckPasswordUser($data)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
+        " . USER_DB . ".users.user_ID,
         " . USER_DB . ".users.user_password,
-        " . USER_DB . ".users.user_ID
+        " . USER_DB . ".users.user_email_state,
+        " . USER_DB . ".users.emaiL_token
         FROM " . USER_DB . ".users 
         WHERE " . USER_DB . ".users.user_username = ?
         GROUP BY " . USER_DB . ".users.user_ID;"
@@ -67,7 +70,8 @@ function CheckPasswordUser($data)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $result = CheckPassword($array[0]['user_password'], $user_passwort, $array[0]['user_ID']);
+
+            $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['emaiL_token']);
 
             if ($result === 'loggedin') {
                 return json_encode(array('success' => $result));
@@ -90,6 +94,12 @@ function AddPasswordUser($data)
     $salt_passwort = $data->passwort . $salt;
     $user_passwort = hash('sha256', $salt_passwort);
 
+    //Generate a random string.
+    $token = openssl_random_pseudo_bytes(32);
+
+    //Convert the binary data into hexadecimal representation.
+    $token = bin2hex($token);
+
     try {
         $defaultLevel = '50';
         $defaultPasswortState = '100';
@@ -100,9 +110,9 @@ function AddPasswordUser($data)
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
 
-        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?);");
+        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, email_token, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 
-        $stmt->bind_param("sssisisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
+        $stmt->bind_param("sssissisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $token, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
 
         $stmt->execute();
 
@@ -115,15 +125,32 @@ function AddPasswordUser($data)
 
         $userID = $array[0]['LAST_INSERT_ID()'];
 
-        UserLog($userID, 'Password', 'Add Password User');
-
         // Überprüfen ob Benutzer existiert
         if ($userID > 0) {
 
-            // Userdaten auslesen und dann Session starten
-            $userData = GetUserData($userID, 'Password');
+            UserLog($userID, 'Password', 'Add Password User');
 
-            return json_encode(array('action' => 'success'));
+            // Mail-Script einbinden
+            require_once dirname(__FILE__) . "/../mail/send_mail.php";
+
+            // Email bestätigen HTML einbinden
+            require_once dirname(__FILE__) . "/../mail/confirm_email_html.php";
+
+            $result = email($userID, NULL, 'Test', $confirm_email_html, '$BodyNoHtml');
+
+            if ($result === 'success') {
+                UserLog($userID, 'Password', 'Send confirm mail address email ' . $result);
+
+                return json_encode(array('action' => 'confirm_password'));
+            } else {
+                UserLog($userID, 'Password', 'Send confirm mail address email failed', $result);
+
+                return json_encode(array('error' => 'email_failed'));
+            }
+            // Userdaten auslesen und dann Session starten
+            // $userData = GetUserData($userID, 'Password');
+
+
         } else {
             return json_encode(array('error' => 'Failed'));
         }
@@ -134,20 +161,87 @@ function AddPasswordUser($data)
 
 
 // Passwort überprüfen
-function CheckPassword($password, $passwordCheck, $userID)
+function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
 {
 
     // Überprüfen ob das Passwort stimmt
     if ($password === $passwordCheck) {
+        if ($emailState === 100 && $emailToken == '') {
+            $userData = GetUserData($userID, 'Password');
 
-        $userData = GetUserData($userID, 'Password');
-
-        return $userData;
+            return $userData;
+        } else {
+            UserLog($userID, 'Password', 'Email address not yet confirmed');
+            return 'email_not_confirmed';
+        }
     } else {
-        UserLog($userID, 'Password', $error = 'Wrong Password');
+        UserLog($userID, 'Password', 'Wrong Password');
         return 'wrong_password';
     }
 }
+
+function CheckEmailToken($userID, $token)
+{
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.email_token
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.user_ID = ?;"
+        );
+
+        $stmt->bind_param("i", $userID);
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        // Überprüfen ob Benutzer existiert
+        if ($array[0]['email_token'] === $token) {
+            return ConfirmUserEmail($userID, $token);
+        } else {
+            return 'failed';
+        }
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+}
+
+function ConfirmUserEmail($userID, $token)
+{
+
+    $emailState = 100;
+
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "UPDATE
+        " . USER_DB . ".users
+        SET " . USER_DB . ".users.email_token = '',
+        " . USER_DB . ".users.user_email_state = ?
+        WHERE " . USER_DB . ".users.user_ID = ?;"
+        );
+
+        $stmt->bind_param("ii", $emailState, $userID);
+
+        $stmt->execute();
+
+
+        return 'success';
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+}
+
 
 ##############################################################################
 #   Google
@@ -360,12 +454,12 @@ function SessionStart($userID, $userData, $method)
     $_SESSION["level"] = $userData[0]['user_level'];
     $_SESSION["picture"] = $userData[0]['user_picture'];
 
-    setcookie ("LOGGEDIN", 'true', time()+3600*24, '/', ".biblewiki.one", 0 );
-    setcookie ("ID", $userID, time()+3600*24, '/', ".biblewiki.one", 0 );
-    setcookie ("FIRSTNAME", $_SESSION["firstname"], time()+3600*24, '/', ".biblewiki.one", 0 );
-    setcookie ("LASTNAME", $_SESSION["lastname"], time()+3600*24, '/', ".biblewiki.one", 0 );
-    setcookie ("LEVEL", $_SESSION["level"], time()+3600*24, '/', ".biblewiki.one", 0 );
-    setcookie ("PICTURE", $_SESSION["picture"], time()+3600*24, '/', ".biblewiki.one", 0 );
+    setcookie("LOGGEDIN", 'true', time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("ID", $userID, time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("LASTNAME", $_SESSION["lastname"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("LEVEL", $_SESSION["level"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("PICTURE", $_SESSION["picture"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
 
     $result = UserLog($userID, $method);
 

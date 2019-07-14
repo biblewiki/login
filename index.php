@@ -41,6 +41,8 @@ session_start();
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
+
+    <!-- Include Cookie-Script -->
     <script src="<?php echo EDIT_HOST ?>/js/cookie.js"></script>
 
 </head>
@@ -106,7 +108,7 @@ session_start();
 
                 $.ajax({
                     type: 'POST',
-                    url: 'async/login.php',
+                    url: 'async/db_connect.php',
                     dataType: 'json',
                     data: JSON.stringify(jsonTx),
                     success: function(data) {
@@ -117,7 +119,7 @@ session_start();
                             window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
                         } else {
                             window.location.replace('/async/refer.php?login=true');
-                         
+
                         }
                     }
                 });

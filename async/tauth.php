@@ -4,7 +4,7 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir']; 
 require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
 // Login Check einbinden
-require_once ('login.php');
+require_once ('db_connect.php');
 
 function checkTelegramAuthorization($auth_data) {
   $check_hash = $auth_data['hash'];

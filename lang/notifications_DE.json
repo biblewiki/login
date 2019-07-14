@@ -1,34 +1,55 @@
 {
     "error": {
-        "_comment": "Login",
-
+        "_comment1": "Login",
         "login": {
             "title": "Login fehlgeschlagen",
-            "text": "Versuchen Sie es später noch einmal oder kontaktieren Sie den Administrator."
+            "text": "Versuche es später noch einmal oder kontaktiere den Administrator."
         },
         "wrong_password": {
             "title": "Login fehlgeschlagen",
             "text": "Falsches Passwort."
+        },
+        "_comment2": "Registrieren",
+        "passwords_missmatch": {
+            "title": "Fehler",
+            "text": "Passwörter stimmen nicht überein."
+        },
+        "_comment3": "Email bestätigen",
+        "confirmed": {
+            "title": "Fehler",
+            "text": "Token stimmt nicht oder abgelaufen."
+        },
+        "email_not_confirmed": {
+            "title": "Fehler",
+            "text": "Email Adresse wurde noch nicht bestätigt."
         }
     },
     "success": {
-        "_comment": "Login",
-
+        "_comment4": "Login",
         "login": {
             "title": "Login erfolgreich",
-            "text": "Sie haben sich erfolgreich eingeloggt."
+            "text": "Du hast dich erfolgreich eingeloggt."
         },
         "logout": {
             "title": "Erfolgreich ausgeloggt",
-            "text": "Sie haben sich erfolgreich ausgeloggt."
+            "text": "Du hast dich erfolgreich ausgeloggt."
+        },
+        "_comment5": "Email bestätigen",
+        "confirmed": {
+            "title": "Email bestätigt",
+            "text": "Deine Email Adresse wurde erfolgreich bestätigt."
         }
     },
     "info": {
-        "_comment": "Login",
-
+        "_comment6": "Login",
         "login_expired": {
             "title": "Session abgelaufen",
-            "text": "Melden Sie sich erneut an."
+            "text": "Melde dich erneut an."
+        },
+        "_comment7": "Registrieren",
+        "login_confirm_email": {
+            "title": "Erfolgreich registriert",
+            "text": "Bestätige deine Email Adresse in der Mail die wir dir geschickt haben."
         }
     },
     "warning": {}
