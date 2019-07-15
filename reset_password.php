@@ -14,14 +14,14 @@ if ($user != '' && $token != '') {
     if ($result === 'valid') {
 
         session_start();
-        
+
         $_SESSION["password_token"] = $token;
         $_SESSION["password_user"] = $user;
         $_SESSION["token_valid"] = $result;
 
-        setcookie("PASSWORD_TOKEN", $token, time() + 9000);
-        setcookie("PASSWORD_USER", $user, time() + 9000);
-        setcookie("TOKEN_VALID", $result, time() + 9000);
+        setcookie("PASSWORD_TOKEN", $token, time() + 300, '/');
+        setcookie("PASSWORD_USER", $user, time() + 300, '/');
+        setcookie("TOKEN_VALID", $result, time() + 300, '/');
     } else {
         header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
         exit;
@@ -94,42 +94,47 @@ if ($user != '' && $token != '') {
     <script>
         $(document).ready(function() {
             // Login Button Klick
+            
             $('#reset-btn').click(function() {
 
-                var user = "<?php echo $_SESSION['password_user']?>";
-                var token = "<?php echo $_COOKIE['PASSWORD_TOKEN']?>";
+                var user = "<?php echo $user ?>";
+                var token = "<?php echo $token ?>";
                 var passwort = $('#passwort').val();
                 var passwort2 = $('#passwort_retype').val();
 
                 if (passwort === passwort2) {
+                    if (passwort !== '') {
 
-                    var jsonTx = {
-                        action: 'ResetPassword',
-                        data: {
-                            'user': user,
-                            'token': token,
-                            'passwort': passwort,
-                            'passwort2': passwort2
-                        }
-                    };
-
-                    $.ajax({
-                        type: 'POST',
-                        url: 'async/db_connect.php',
-                        dataType: 'json',
-                        data: JSON.stringify(jsonTx),
-                        success: function(data) {
-                            if (data['error'] !== undefined) {
-                                notification('error', data['error']);
-                            } else {
-                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=success');
+                        var jsonTx = {
+                            action: 'ResetPassword',
+                            data: {
+                                'user': user,
+                                'token': token,
+                                'passwort': passwort,
+                                'passwort2': passwort2
                             }
-                        }
-                    });
+                        };
+
+                        $.ajax({
+                            type: 'POST',
+                            url: 'async/db_connect.php',
+                            dataType: 'json',
+                            data: JSON.stringify(jsonTx),
+                            success: function(data) {
+                                if (data['error'] !== undefined) {
+                                    console.log(data['error']);
+                                    notification('error', data['error']);
+                                } else {
+                                    window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=success');
+                                }
+                            }
+                        });
+                    } else {
+                        notification('error', 'password_emty');
+                    }
                 } else {
                     notification('error', 'passwords_missmatch');
                 }
-
             });
         });
     </script>

@@ -38,8 +38,8 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                         <form action="javascript:void(0);" method="get">
                             <fieldset class="clearfix">
 
-                                <p><span class="fa fa-user"></span><input id="benutzername" type="text" Placeholder="Benutzername" value="<?php echo $benutzername ?>" <?php if (!empty($benutzername)) echo 'disabled'; ?>></p>
-                                <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required autofocus></p>
+                                <p><span class="fa fa-user"></span><input id="benutzername" type="text" Placeholder="Benutzername" value="<?php echo $benutzername ?>" <?php echo (!empty($benutzername) ? 'disabled' : 'autofocus'); ?>></p>
+                                <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required <?php if(!empty($benutzername)) echo 'autofocus'; ?>></p>
 
                                 <div>
                                     <span style="width:52%; text-align:left;  display: inline-block;"></span>

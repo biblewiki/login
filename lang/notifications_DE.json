@@ -34,7 +34,10 @@
             "title": "Fehler",
             "text": "Benutzer existiert nicht."
         },
-
+        "password_emty": {
+            "title": "Fehler",
+            "text": "Passwort darf nicht leer sein."
+        },
         "password_reset": {
             "title": "Fehler",
             "text": "Token stimmt nicht oder ist abgelaufen."

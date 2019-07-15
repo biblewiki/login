@@ -270,7 +270,7 @@ function TokenResetPassword($data)
 
         $mail->set_to_email($data[0]['user_email']);
         $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
-        $mail->set_subject('BibleWiki | Email Adresse bestätigen');
+        $mail->set_subject('BibleWiki | Passwort zurücksetzen bestätigen');
         $mail->set_body($reset_password_html);
         $result = $mail->send_mail();
 
@@ -317,9 +317,9 @@ function ResetPassword($data)
     session_start();
 
     $userID = $data->user;
-
+    //return json_encode(array('error' => $data->token));
     if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token && $_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
-
+        //return json_encode(array('error' => 'why'));
         // Passwort Versalzen
         $salt = '_biblewikiloginsalt255%';
         $salt_passwort = $data->passwort . $salt;
@@ -354,11 +354,11 @@ function ResetPassword($data)
             unset($_SESSION["token_valid"]);
 
             unset($_COOKIE['PASSWORD_TOKEN']);
-            setcookie("PASSWORD_TOKEN", '', time() - 3600);
+            setcookie("PASSWORD_TOKEN", '', time() - 3600, '/');
             unset($_COOKIE['PASSWORD_USER']);
-            setcookie("PASSWORD_USER", '', time() - 3600);
+            setcookie("PASSWORD_USER", '', time() - 3600, '/');
             unset($_COOKIE['TOKEN_VALID']);
-            setcookie("TOKEN_VALID", '', time() - 3600);
+            setcookie("TOKEN_VALID", '', time() - 3600, '/');
             /*
         // Mail Klasse einbinden
         require_once dirname(__FILE__) . "/../lib/mail.class.php";
