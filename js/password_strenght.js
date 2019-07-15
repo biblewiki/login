@@ -269,7 +269,7 @@ jQuery(document).ready(function() {
         wordRepetitions: "Zu viele Wiederholungen",
         wordSequences: "Dein Passwort enthält unerlaubte Zeichenfolgen"
     };
-    defaultOptions.ui.verdicts = ["Schwach", "Nicht so sicher", "Sicher", "Sicherer als dein Handy", "Unheimlich sicher "];
+    defaultOptions.ui.verdicts = ["Schwach", "Sehr unsicher", "Nicht viel sicherer", "Sicherer als Brot", "Unheimlich sicher"];
     defaultOptions.ui.showVerdicts = true;
     defaultOptions.ui.showVerdictsInsideProgressBar = false;
     defaultOptions.ui.showErrors = true;

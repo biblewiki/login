@@ -98,37 +98,42 @@ session_start();
                 var benutzername = $('#benutzername').val();
                 var passwort = $('#passwort').val();
 
-                var jsonTx = {
-                    action: 'CheckPasswordUser',
-                    data: {
-                        'benutzername': benutzername,
-                        'passwort': passwort
-                    }
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'async/db_connect.php',
-                    dataType: 'json',
-                    data: JSON.stringify(jsonTx),
-                    success: function(data) {
-                        if (data['error'] !== undefined) {
-                            notification('error', data['error']);
-                        } else if (data['action'] === 'Register') {
-                            document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
-                            window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
-                        } else {
-                            window.location.replace('/async/refer.php?login=true');
-
+                if (benutzername != '') {
+                    var jsonTx = {
+                        action: 'CheckPasswordUser',
+                        data: {
+                            'benutzername': benutzername,
+                            'passwort': passwort
                         }
-                    }
-                });
+                    };
+
+                    $.ajax({
+                        type: 'POST',
+                        url: 'async/db_connect.php',
+                        dataType: 'json',
+                        data: JSON.stringify(jsonTx),
+                        success: function(data) {
+                            if (data['error'] !== undefined) {
+                                notification('error', data['error']);
+                            } else if (data['action'] === 'Register') {
+                                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
+                            } else {
+                                window.location.replace('/async/refer.php?login=true');
+
+                            }
+                        }
+                    });
+                } else {
+                    notification('warning', 'fields_emty');
+                }
             });
+
 
             $('#forgot_password').click(function() {
 
                 var benutzername = $('#benutzername').val();
-                
+
                 document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
                 window.location.replace("<?php echo LOGIN_HOST ?>" + "/forgot_password.php");
             });

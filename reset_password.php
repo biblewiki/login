@@ -5,22 +5,24 @@ require_once dirname(__FILE__) . '/async/db_connect.php';
 // Settings einbinden
 require_once dirname(__FILE__) . '/async/settings.php';
 
-$user = $_GET['user'];
+$userID = $_GET['user'];
 $token = $_GET['token'];
 
-if ($user != '' && $token != '') {
-    $result = CheckPasswordToken($user, $token);
+if ($userID != '' && $token != '') {
+    $result = CheckPasswordToken($userID, $token);
 
     if ($result === 'valid') {
+
+        GetUserData($user);
 
         session_start();
 
         $_SESSION["password_token"] = $token;
-        $_SESSION["password_user"] = $user;
+        $_SESSION["password_user"] = $userID;
         $_SESSION["token_valid"] = $result;
 
         setcookie("PASSWORD_TOKEN", $token, time() + 300, '/');
-        setcookie("PASSWORD_USER", $user, time() + 300, '/');
+        setcookie("PASSWORD_USER", $userID, time() + 300, '/');
         setcookie("TOKEN_VALID", $result, time() + 300, '/');
     } else {
         header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
@@ -102,7 +104,7 @@ if ($user != '' && $token != '') {
 
             $('#reset-btn').click(function() {
 
-                var user = "<?php echo $user ?>";
+                var user = "<?php echo $userID ?>";
                 var token = "<?php echo $token ?>";
                 var passwort = $('#passwort').val();
                 var passwort2 = $('#passwort_retype').val();

@@ -318,6 +318,7 @@ function ResetPassword($data)
     session_start();
 
     $userID = $data->user;
+
     //return json_encode(array('error' => $data->token));
     if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token && $_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
         //return json_encode(array('error' => 'why'));
@@ -371,8 +372,8 @@ function ResetPassword($data)
 
             $mail = new mail();
 
-            $mail->set_to_email($userData[0]['user_email']);
-            $mail->set_to_name($userData[0]['user_firstname'] . ' ' . $userData[0]['user_lastname']);
+            $mail->set_to_email($userData['user_email']);
+            $mail->set_to_name($userData['user_firstname'] . ' ' . $userData['user_lastname']);
             $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
             $mail->set_body($reset_password_confirmed_html);
             $result = $mail->send_mail();
@@ -648,7 +649,7 @@ function GetUserData($userID)
 
         $array = db::getTableAsArray($stmt);
 
-        return $array;
+        return $array[0];
     } catch (Exception $e) {
         return $e->getMessage();
     }
@@ -662,10 +663,10 @@ function SessionStart($userID, $userData, $method)
 
     $_SESSION["loggedin"] = true;
     $_SESSION["id"] = $userID;
-    $_SESSION["firstname"] = $userData[0]['user_firstname'];
-    $_SESSION["lastname"] = $userData[0]['user_lastname'];
-    $_SESSION["level"] = $userData[0]['user_level'];
-    $_SESSION["picture"] = $userData[0]['user_picture'];
+    $_SESSION["firstname"] = $userData['user_firstname'];
+    $_SESSION["lastname"] = $userData['user_lastname'];
+    $_SESSION["level"] = $userData['user_level'];
+    $_SESSION["picture"] = $userData['user_picture'];
 
     setcookie("LOGGEDIN", 'true', time() + 3600 * 24, '/', ".biblewiki.one", 0);
     setcookie("ID", $userID, time() + 3600 * 24, '/', ".biblewiki.one", 0);

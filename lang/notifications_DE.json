@@ -34,6 +34,10 @@
             "title": "Fehler",
             "text": "Benutzer existiert nicht."
         },
+        "password_like_old_password"::{
+            "title": "Fehler",
+            "text": "Das Passwort darf nicht dein altes Passwort sein."
+        },
         "password_reset": {
             "title": "Fehler",
             "text": "Token stimmt nicht oder ist abgelaufen."
