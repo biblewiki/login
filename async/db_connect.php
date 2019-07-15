@@ -171,9 +171,10 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
     // Überprüfen ob das Passwort stimmt
     if ($password === $passwordCheck) {
         if ($emailState === 100 && $emailToken == '') {
-            $userData = GetUserData($userID, 'Password');
+            $userData = GetUserData($userID);
+            $result = SessionStart($userID, $userData, 'Password');
 
-            return $userData;
+            return $result;
         } else {
             UserLog($userID, 'Password', 'Email address not yet confirmed');
             return 'email_not_confirmed';
@@ -359,21 +360,23 @@ function ResetPassword($data)
             setcookie("PASSWORD_USER", '', time() - 3600, '/');
             unset($_COOKIE['TOKEN_VALID']);
             setcookie("TOKEN_VALID", '', time() - 3600, '/');
-            /*
-        // Mail Klasse einbinden
-        require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
-        // Email bestätigen HTML einbinden
-        require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
+            // Mail Klasse einbinden
+            require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
-        $mail = new mail();
+            // Email bestätigen HTML einbinden
+            require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
 
-        $mail->set_to_email($data[0]['user_email']);
-        $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
-        $mail->set_subject('BibleWiki | Email Adresse bestätigen');
-        $mail->set_body($reset_password_html);
-        $result = $mail->send_mail();
-*/
+            $userData = GetUserData($userID);
+
+            $mail = new mail();
+
+            $mail->set_to_email($userData[0]['user_email']);
+            $mail->set_to_name($userData[0]['user_firstname'] . ' ' . $userData[0]['user_lastname']);
+            $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
+            $mail->set_body($reset_password_confirmed_html);
+            $result = $mail->send_mail();
+
             return json_encode(array('success' => $result));
         } catch (Exception $e) {
             return json_encode(array('error' => $e->getMessage()));
@@ -475,7 +478,8 @@ function CheckGoogleUser($userData)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $result = GetUserData($array[0]['user_ID'], 'Google');
+            $userData = GetUserData($array[0]['user_ID']);
+            $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
 
             return $result;
             // Wenn nicht, wird er erstellt
@@ -519,7 +523,10 @@ function AddGoogleUser($userData)
         UserLog($userID, 'Google', 'Add Google User');
 
         // Userdaten auslesen und dann Session starten
-        return $userData = GetUserData($userID, 'Google');
+        $userData = GetUserData($userID);
+        $result = SessionStart($userID, $userData, 'Google');
+
+        return $result;
     } catch (Exception $e) {
         return $e->getMessage();
     }
@@ -554,7 +561,8 @@ function CheckTelegramUser($userData)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $result = GetUserData($array[0]['user_ID'], 'Telegram');
+            $userData = GetUserData($array[0]['user_ID'], 'Telegram');
+            $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
             return $result;
             // Wenn nicht, wird er erstellt
@@ -600,7 +608,10 @@ function AddTelegramUser($userData)
         UserLog($userID, 'Telegram', 'Add Telegram User');
 
         // Userdaten auslesen und dann Session starten
-        return $userData = GetUserData($userID, 'Telegram');
+        $userData = GetUserData($userID, 'Telegram');
+        $result = SessionStart($userID, $userData, 'Telegram');
+
+        return $result;
     } catch (Exception $e) {
         return $e->getMessage();
     }
@@ -611,7 +622,7 @@ function AddTelegramUser($userData)
 ##############################################################################
 
 // Benutzerinfos abrufen
-function GetUserData($userID, $method)
+function GetUserData($userID)
 {
     try {
         // Datenbankverbindung herstellen
@@ -624,6 +635,7 @@ function GetUserData($userID, $method)
         " . USER_DB . ".users.user_ID,
         " . USER_DB . ".users.user_firstname,
         " . USER_DB . ".users.user_lastname,
+        " . USER_DB . ".users.user_email,
         " . USER_DB . ".users.user_level,
         " . USER_DB . ".users.user_picture
         FROM " . USER_DB . ".users 
@@ -636,9 +648,7 @@ function GetUserData($userID, $method)
 
         $array = db::getTableAsArray($stmt);
 
-        $result = SessionStart($userID, $array, $method);
-
-        return $result;
+        return $array;
     } catch (Exception $e) {
         return $e->getMessage();
     }

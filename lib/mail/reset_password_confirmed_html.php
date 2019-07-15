@@ -3,7 +3,7 @@
 require_once dirname(__FILE__) . "../../../async/settings.php";
 
 $login_host = LOGIN_HOST;
-$reset_password_html = <<<EOT
+$reset_password_confirmed_html = <<<EOT
 <!DOCTYPE html>
 <html>
 <head>
@@ -146,7 +146,7 @@ $reset_password_html = <<<EOT
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
           <tr>
             <td align="left" bgcolor="#ffffff" style="padding: 36px 24px 0; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; border-top: 3px solid #d4dadf;">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 48px;">Passwort zurücksetzen</h1>
+              <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 48px;">Passwort zurückgesetzt</h1>
             </td>
           </tr>
         </table>
@@ -172,7 +172,9 @@ $reset_password_html = <<<EOT
           <!-- start copy -->
           <tr>
             <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-              <p style="margin: 0;">Drücke auf den Button um dein Passwort zurückzusetzen.</p>
+              <p style="margin: 0;">Dein Passwort wurde erfolgreich zurückgesetzt.</p>
+              <p></p>
+              <p style="margin: 0;">Logge dich nun mit deinem neuen Passwort ein.</p>
             </td>
           </tr>
           <!-- end copy -->
@@ -186,7 +188,7 @@ $reset_password_html = <<<EOT
                     <table border="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td align="center" bgcolor="#1a82e2" style="border-radius: 6px;">
-                          <a href="$login_host/reset_password.php?user=$userID&token=$token" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Passwort zurücksetzen</a>
+                          <a href="$login_host" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Auf BibleWiki einloggen</a>
                         </td>
                       </tr>
                     </table>
@@ -196,20 +198,6 @@ $reset_password_html = <<<EOT
             </td>
           </tr>
           <!-- end button -->
-
-          <!-- start copy -->
-          <tr>
-            <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-              <p style="margin: 0;">Wenn es nicht funktioniert, kopiere diesen Link und füge ihn direkt im Browser ein:</p>
-              <p style="margin: 0;"><a href="$login_host/reset_password.php?user=$userID&token=$token" target="_blank">$login_host/reset_password.php?user=$userID&token=$token</a></p>
-            </td>
-          </tr>
-          <tr>
-          <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-              <p style="margin: 0;">Wenn du dein Passwort nicht zurücksetzen willst, ignoriere diese Email.</p>
-            </td>
-          </tr>
-          <!-- end copy -->
 
           <!-- start copy -->
           <tr>
@@ -242,7 +230,7 @@ $reset_password_html = <<<EOT
           <!-- start permission -->
           <tr>
             <td align="center" bgcolor="#e9ecef" style="padding: 12px 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #666;">
-              <p style="margin: 0;">Du erhälst diese Email weil du dein Passwort für <a href="https://biblewiki.one">BibleWiki</a> zurücksetzen willst.<br>Um das Passwort zurückzusetzen, klicke auf den Button oben oder füge den Link im Browser ein.</p>
+              <p style="margin: 0;">Du erhälst diese Email weil du dein Passwort für <a href="https://biblewiki.one">BibleWiki</a> zurückgesetzt hast.<br>Du kannst dich nun mit deinen neuen Loggindaten anmelden.</p>
             </td>
           </tr>
           <!-- end permission -->
@@ -272,4 +260,4 @@ $reset_password_html = <<<EOT
 </html>
 EOT;
 
-//echo $reset_password_html;
+//echo $reset_password_confirmed_html;

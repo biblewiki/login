@@ -23,7 +23,7 @@ if ($user != '' && $token != '') {
         setcookie("PASSWORD_USER", $user, time() + 300, '/');
         setcookie("TOKEN_VALID", $result, time() + 300, '/');
     } else {
-       // header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
+        header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
         exit;
     }
 } else {
