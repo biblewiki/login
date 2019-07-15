@@ -14,7 +14,6 @@
             "title": "Fehler",
             "text": "Passwörter stimmen nicht überein."
         },
-
         "add_user_failed": {
             "title": "Fehler",
             "text": "Benutzer konnte nicht hizugefügt werden. Kontaktiere den Administrator."
@@ -28,21 +27,15 @@
             "title": "Fehler",
             "text": "Email Adresse wurde noch nicht bestätigt."
         },
-
         "comment3.1": "Passwort zurücksetzen",
         "user_not_exist": {
             "title": "Fehler",
             "text": "Benutzer existiert nicht."
         },
-        "password_emty": {
-            "title": "Fehler",
-            "text": "Passwort darf nicht leer sein."
-        },
         "password_reset": {
             "title": "Fehler",
             "text": "Token stimmt nicht oder ist abgelaufen."
         },
-
         "pw_reset_failed": {
             "title": "Fehler",
             "text": "Passwort konnte nicht zurückgesetzt werden."
@@ -59,9 +52,9 @@
             "text": "Du hast dich erfolgreich ausgeloggt."
         },
         "_comment5": "Email bestätigen",
-        "confirmed": {
+        "email_confirmed": {
             "title": "Email bestätigt",
-            "text": "Deine Email Adresse wurde erfolgreich bestätigt."
+            "text": "Deine Email Adresse wurde erfolgreich bestätigt. Melde dich nun mit deinen Logindaten an."
         },
         "comment3.1": "Passwort zurücksetzen",
         "password_reset": {
@@ -86,5 +79,14 @@
             "text": "Bestätige das Passwort zurücksetzen in der Mail die wir dir geschickt haben."
         }
     },
-    "warning": {}
+    "warning": {
+        "fields_emty": {
+            "title": "Warnung",
+            "text": "Nicht alle Felder wurden ausgefült."
+        },
+        "password_emty": {
+            "title": "Warnung",
+            "text": "Passwort darf nicht leer sein."
+        }
+    }
 }

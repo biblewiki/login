@@ -295,7 +295,7 @@ function CheckPasswordToken($userID, $token)
         WHERE " . USER_DB . ".users.user_ID = ?;"
         );
 
-        $stmt->bind_param("i", $userID);
+        $stmt->bind_param("is", $userID, $token);
 
         $stmt->execute();
 

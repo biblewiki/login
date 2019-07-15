@@ -130,7 +130,7 @@ if ($user != '' && $token != '') {
                             }
                         });
                     } else {
-                        notification('error', 'password_emty');
+                        notification('warning', 'password_emty');
                     }
                 } else {
                     notification('error', 'passwords_missmatch');

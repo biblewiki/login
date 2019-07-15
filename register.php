@@ -79,37 +79,46 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                 var passwort = $('#passwort').val();
                 var passwort2 = $('#passwort_retype').val();
 
-                if (passwort === passwort2) {
 
+                if (benutzername != '' && vorname != '' && nachname != '' && email != '') {
+                    if (passwort === passwort2) {
+                        if (passwort != '') {
 
-                    var jsonTx = {
-                        action: 'AddPasswordUser',
-                        data: {
-                            'benutzername': benutzername,
-                            'vorname': vorname,
-                            'nachname': nachname,
-                            'email': email,
-                            'passwort': passwort,
-                            'passwort2': passwort2
+                            var jsonTx = {
+                                action: 'AddPasswordUser',
+                                data: {
+                                    'benutzername': benutzername,
+                                    'vorname': vorname,
+                                    'nachname': nachname,
+                                    'email': email,
+                                    'passwort': passwort,
+                                    'passwort2': passwort2
+                                }
+                            };
+
+                            $.ajax({
+                                type: 'POST',
+                                url: 'async/db_connect.php',
+                                dataType: 'json',
+                                data: JSON.stringify(jsonTx),
+                                success: function(data) {
+                                    if (data['error'] !== undefined) {
+                                        notification('error', data['error']);
+                                    } else {
+                                        window.location.replace("<?php echo LOGIN_HOST ?>" + '?login=confirm_email');
+                                    }
+                                }
+                            });
+                        } else {
+                            notification('warning', 'password_emty');
                         }
-                    };
-
-                    $.ajax({
-                        type: 'POST',
-                        url: 'async/db_connect.php',
-                        dataType: 'json',
-                        data: JSON.stringify(jsonTx),
-                        success: function(data) {
-                            if (data['error'] !== undefined) {
-                                notification('error', data['error']);
-                            } else {
-                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?login=confirm_email');
-                            }
-                        }
-                    });
+                    } else {
+                        notification('error', 'passwords_missmatch');
+                    }
                 } else {
-                    notification('error', 'passwords_missmatch');
+                    notification('warning', 'fields_emty');
                 }
+
             });
         });
     </script>
