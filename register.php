@@ -21,6 +21,10 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
     <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
 
+    <!-- Passwort Sicherheitscheck -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="js/password_strenght.js"></script>
+
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="css/style.css" rel="stylesheet" />
 
@@ -32,8 +36,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
         <div class="container">
             <center>
                 <div class="middle">
-                    <div id="login">
-
+                    <div class="row" id="login">
                         <form action="javascript:void(0);" method="get">
                             <fieldset class="clearfix">
 
@@ -42,6 +45,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                                 <p><span class="fa fa-user"></span><input id="lastname" type="text" Placeholder="Nachname" required></p>
                                 <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required></p>
                                 <p><span class="fa fa-lock"></span><input id="passwort" type="password" Placeholder="Passwort" required></p>
+                                <div class="pwstrength_viewport_progress"></div>
                                 <p><span class="fa fa-lock"></span><input id="passwort_retype" type="password" Placeholder="Passwort wiederholen" required></p>
 
                                 <div>
@@ -57,6 +61,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                         <div class="clearfix"></div>
 
                     </div> <!-- end login -->
+
                     <div class="logo">
                         <img src="img/biblewiki_weiss.svg" height="300px">
                         <div class="clearfix"></div>
@@ -69,6 +74,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
     </div>
     <script>
         $(document).ready(function() {
+
             // Login Button Klick
             $('#login-btn').click(function() {
 
@@ -81,8 +87,8 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 
 
                 if (benutzername != '' && vorname != '' && nachname != '' && email != '') {
-                    if (passwort === passwort2) {
-                        if (passwort != '') {
+                    if (pwStrength >= 40) {
+                        if (passwort === passwort2) {
 
                             var jsonTx = {
                                 action: 'AddPasswordUser',
@@ -109,15 +115,17 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                                     }
                                 }
                             });
+
                         } else {
-                            notification('warning', 'password_emty');
+                            notification('error', 'passwords_missmatch');
                         }
                     } else {
-                        notification('error', 'passwords_missmatch');
+                        notification('warning', 'password_parameter');
                     }
                 } else {
                     notification('warning', 'fields_emty');
                 }
+
 
             });
         });

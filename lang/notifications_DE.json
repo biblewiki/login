@@ -14,6 +14,8 @@
             "title": "Fehler",
             "text": "Passwörter stimmen nicht überein."
         },
+
+
         "add_user_failed": {
             "title": "Fehler",
             "text": "Benutzer konnte nicht hizugefügt werden. Kontaktiere den Administrator."
@@ -87,6 +89,10 @@
         "password_emty": {
             "title": "Warnung",
             "text": "Passwort darf nicht leer sein."
+        },
+        "password_parameter": {
+            "title": "Warnung",
+            "text": "Passwort ist zu unsicher."
         }
     }
 }

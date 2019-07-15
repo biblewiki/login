@@ -23,7 +23,7 @@ if ($user != '' && $token != '') {
         setcookie("PASSWORD_USER", $user, time() + 300, '/');
         setcookie("TOKEN_VALID", $result, time() + 300, '/');
     } else {
-        header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
+       // header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
         exit;
     }
 } else {
@@ -48,6 +48,10 @@ if ($user != '' && $token != '') {
     <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
 
+    <!-- Passwort Sicherheitscheck -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="js/password_strenght.js"></script>
+
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="css/style.css" rel="stylesheet" />
 
@@ -66,6 +70,7 @@ if ($user != '' && $token != '') {
                             <fieldset class="clearfix">
 
                                 <p><span class="fa fa-lock"></span><input id="passwort" type="password" Placeholder="Passwort" required></p>
+                                <div class="pwstrength_viewport_progress"></div>
                                 <p><span class="fa fa-lock"></span><input id="passwort_retype" type="password" Placeholder="Passwort wiederholen" required></p>
 
                                 <div>
@@ -94,16 +99,16 @@ if ($user != '' && $token != '') {
     <script>
         $(document).ready(function() {
             // Login Button Klick
-            
+
             $('#reset-btn').click(function() {
 
                 var user = "<?php echo $user ?>";
                 var token = "<?php echo $token ?>";
                 var passwort = $('#passwort').val();
                 var passwort2 = $('#passwort_retype').val();
+                if (pwStrength >= 40) {
+                    if (passwort === passwort2) {
 
-                if (passwort === passwort2) {
-                    if (passwort !== '') {
 
                         var jsonTx = {
                             action: 'ResetPassword',
@@ -129,11 +134,12 @@ if ($user != '' && $token != '') {
                                 }
                             }
                         });
+
                     } else {
-                        notification('warning', 'password_emty');
+                        notification('error', 'passwords_missmatch');
                     }
                 } else {
-                    notification('error', 'passwords_missmatch');
+                    notification('warning', 'password_parameter');
                 }
             });
         });
