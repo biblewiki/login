@@ -40,7 +40,7 @@ $benutzername = json_decode($_COOKIE['username']);
                             <fieldset class="clearfix">
 
                                 <p><span class="fa fa-user"></span><input id="benutzername" type="text" Placeholder="Benutzername" value="<?php echo $benutzername ?>" disabled></p>
-                                <p><span class="fa fa-user"></span><input id="firstname" type="text" Placeholder="Vorname" required></p>
+                                <p><span class="fa fa-user"></span><input id="firstname" type="text" Placeholder="Vorname" required autofocus></p>
                                 <p><span class="fa fa-user"></span><input id="lastname" type="text" Placeholder="Nachname" required></p>
                                 <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required></p>
                                 <p><span class="fa fa-lock"></span><input id="passwort" type="password" Placeholder="Passwort" required></p>
@@ -103,7 +103,8 @@ $benutzername = json_decode($_COOKIE['username']);
                         data: JSON.stringify(jsonTx),
                         success: function(data) {
                             if (data['error'] !== undefined) {
-                                notification('error', data['error']);
+                                console.log(data['error']);
+                                //notification('error', data['error']);
                             } else {
                                 window.location.replace("<?php echo LOGIN_HOST ?>" + '?login=confirm_email');
                             }

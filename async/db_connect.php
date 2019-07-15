@@ -4,10 +4,17 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 
+// PHPMailer Pfad definieren
+$PHPMailerDir = $homedir . '/www/biblewiki.one/mail/PHPMailer';
+
+require $PHPMailerDir . '/src/Exception.php';
+require $PHPMailerDir . '/src/PHPMailer.php';
+require $PHPMailerDir . '/src/SMTP.php';
+
 // Log-Script einbinden
 require_once dirname(__FILE__) . '/log.php';
 
-// Datenbank Classe einbinden
+// Datenbank Klasse einbinden
 require_once dirname(__FILE__) . "/../lib/db.class.php";
 
 // AJAX Input decodieren
@@ -26,11 +33,7 @@ if ($jsonTx->action != "") {
     }
     exit;
 }
-/*else {
-    $ret = array('error' => 'No Action');
-    echo json_encode($ret);
-    exit();
-}*/
+
 
 ##############################################################################
 #   Passwort Login
@@ -56,13 +59,13 @@ function CheckPasswordUser($data)
         " . USER_DB . ".users.user_ID,
         " . USER_DB . ".users.user_password,
         " . USER_DB . ".users.user_email_state,
-        " . USER_DB . ".users.emaiL_token
+        " . USER_DB . ".users.email_token
         FROM " . USER_DB . ".users 
-        WHERE " . USER_DB . ".users.user_username = ?
+        WHERE " . USER_DB . ".users.user_username = ? OR " . USER_DB . ".users.user_email = ?
         GROUP BY " . USER_DB . ".users.user_ID;"
         );
 
-        $stmt->bind_param("s", $data->benutzername);
+        $stmt->bind_param("ss", $data->benutzername, $data->benutzername);
 
         $stmt->execute();
 
@@ -71,7 +74,7 @@ function CheckPasswordUser($data)
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
 
-            $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['emaiL_token']);
+            $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['email_token']);
 
             if ($result === 'loggedin') {
                 return json_encode(array('success' => $result));
@@ -130,13 +133,19 @@ function AddPasswordUser($data)
 
             UserLog($userID, 'Password', 'Add Password User');
 
-            // Mail-Script einbinden
-            require_once dirname(__FILE__) . "/../mail/send_mail.php";
+            // Mail Klasse einbinden
+            require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
             // Email bestätigen HTML einbinden
             require_once dirname(__FILE__) . "/../mail/confirm_email_html.php";
 
-            $result = email($userID, NULL, 'Test', $confirm_email_html, '$BodyNoHtml');
+            $mail = new mail();
+
+            $mail->set_to_email($data->email);
+            $mail->set_to_name($data->vorname . ' ' . $data->nachname);
+            $mail->set_subject('BibleWiki | Email Adresse bestätigen');
+            $mail->set_body($confirm_email_html);
+            $result = $mail->send_mail();
 
             if ($result === 'success') {
                 UserLog($userID, 'Password', 'Send confirm mail address email ' . $result);
@@ -147,12 +156,8 @@ function AddPasswordUser($data)
 
                 return json_encode(array('error' => 'email_failed'));
             }
-            // Userdaten auslesen und dann Session starten
-            // $userData = GetUserData($userID, 'Password');
-
-
         } else {
-            return json_encode(array('error' => 'Failed'));
+            return json_encode(array('error' => 'add_user_failed'));
         }
     } catch (Exception $e) {
         return $e->getMessage();
