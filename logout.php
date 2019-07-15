@@ -46,6 +46,8 @@ unset($_COOKIE['LEVEL']);
 setcookie ("LEVEL", '', time() - 3600, '/', ".biblewiki.one", 0 );
 unset($_COOKIE['PICTURE']);
 setcookie ("PICTURE", '', time() - 3600, '/', ".biblewiki.one", 0 );
+unset($_COOKIE['USERNAME']);
+setcookie ("USERNAME", '', time() - 3600);
 
 if (isset($_GET['login'])){
     header('Location: /?logout=sucess&login='.$_GET['login']);

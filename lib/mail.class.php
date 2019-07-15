@@ -10,7 +10,7 @@ class mail
 
     // Standartwerte
 
-    var $fromEmail = 'no-reply@biblewiki.com';
+    var $fromEmail = 'no-reply@biblewiki.one';
     var $fromName = 'BibleWiki';
     var $attachment = NULL;
 

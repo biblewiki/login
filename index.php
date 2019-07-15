@@ -69,7 +69,7 @@ session_start();
                                 <p><span class="fa fa-lock"></span><input id="passwort" type="password" Placeholder="Passwort" required></p>
 
                                 <div>
-                                    <span style="width:52%; text-align:left;  display: inline-block;"><a class="small-text" href="#">Passwort vergessen?</a></span>
+                                    <span style="width:52%; text-align:left;  display: inline-block;"><a id="forgot_password" class="small-text" href="#">Passwort vergessen?</a></span>
                                     <span style="width:46%; text-align:right;  display: inline-block;"><input id="login-btn" type="submit" value="Login"></span>
                                 </div>
 
@@ -115,7 +115,7 @@ session_start();
                         if (data['error'] !== undefined) {
                             notification('error', data['error']);
                         } else if (data['action'] === 'Register') {
-                            document.cookie = 'username = ' + JSON.stringify(benutzername);
+                            document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
                             window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
                         } else {
                             window.location.replace('/async/refer.php?login=true');
@@ -124,6 +124,15 @@ session_start();
                     }
                 });
             });
+
+            $('#forgot_password').click(function() {
+
+                var benutzername = $('#benutzername').val();
+                
+                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
+                window.location.replace("<?php echo LOGIN_HOST ?>" + "/forgot_password.php");
+            });
+
         });
     </script>
 </body>

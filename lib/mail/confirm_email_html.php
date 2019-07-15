@@ -1,6 +1,6 @@
 <?php 
 // Settings einbinden
-require_once dirname(__FILE__) . "/../async/settings.php";
+require_once dirname(__FILE__) . "../../../async/settings.php";
 
 $login_host = LOGIN_HOST;
 $confirm_email_html = <<<EOT
@@ -102,7 +102,7 @@ $confirm_email_html = <<<EOT
 
   <!-- start preheader -->
   <div class="preheader" style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
-    A preheader is the short summary text that follows the subject line when an email is viewed in the inbox.
+    BibleWiki Email Adresse bestätigen
   </div>
   <!-- end preheader -->
 

@@ -14,14 +14,35 @@
             "title": "Fehler",
             "text": "Passwörter stimmen nicht überein."
         },
-        "_comment3": "Email bestätigen",
-        "confirmed": {
+
+        "add_user_failed": {
             "title": "Fehler",
-            "text": "Token stimmt nicht oder abgelaufen."
+            "text": "Benutzer konnte nicht hizugefügt werden. Kontaktiere den Administrator."
+        },
+        "_comment3": "Email bestätigen",
+        "email_confirmed": {
+            "title": "Fehler",
+            "text": "Token stimmt nicht oder ist abgelaufen."
         },
         "email_not_confirmed": {
             "title": "Fehler",
             "text": "Email Adresse wurde noch nicht bestätigt."
+        },
+
+        "comment3.1": "Passwort zurücksetzen",
+        "user_not_exist": {
+            "title": "Fehler",
+            "text": "Benutzer existiert nicht."
+        },
+
+        "password_reset": {
+            "title": "Fehler",
+            "text": "Token stimmt nicht oder ist abgelaufen."
+        },
+
+        "pw_reset_failed": {
+            "title": "Fehler",
+            "text": "Passwort konnte nicht zurückgesetzt werden."
         }
     },
     "success": {
@@ -38,6 +59,11 @@
         "confirmed": {
             "title": "Email bestätigt",
             "text": "Deine Email Adresse wurde erfolgreich bestätigt."
+        },
+        "comment3.1": "Passwort zurücksetzen",
+        "password_reset": {
+            "title": "Passwort zurückgesetzt",
+            "text": "Dein Passwort wurde erfolgreich zurückgesetzt. Melde dich nun mit deinem neuen Paswort an."
         }
     },
     "info": {
@@ -50,6 +76,11 @@
         "login_confirm_email": {
             "title": "Erfolgreich registriert",
             "text": "Bestätige deine Email Adresse in der Mail die wir dir geschickt haben."
+        },
+        "comment3.1": "Passwort zurücksetzen",
+        "password_reset_confirm_email": {
+            "title": "Passwort zurücksetzen",
+            "text": "Bestätige das Passwort zurücksetzen in der Mail die wir dir geschickt haben."
         }
     },
     "warning": {}

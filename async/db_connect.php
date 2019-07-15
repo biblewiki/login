@@ -137,7 +137,7 @@ function AddPasswordUser($data)
             require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
             // Email bestätigen HTML einbinden
-            require_once dirname(__FILE__) . "/../mail/confirm_email_html.php";
+            require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
 
             $mail = new mail();
 
@@ -160,10 +160,9 @@ function AddPasswordUser($data)
             return json_encode(array('error' => 'add_user_failed'));
         }
     } catch (Exception $e) {
-        return $e->getMessage();
+        return json_encode(array('error' => $e->getMessage()));
     }
 }
-
 
 // Passwort überprüfen
 function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
@@ -182,6 +181,205 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
     } else {
         UserLog($userID, 'Password', 'Wrong Password');
         return 'wrong_password';
+    }
+}
+
+// Passwort reseten
+function RequestResetPassword($data)
+{
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.user_ID,
+        " . USER_DB . ".users.user_firstname,
+        " . USER_DB . ".users.user_lastname,
+        " . USER_DB . ".users.user_email
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.user_username = ? AND " . USER_DB . ".users.user_email = ?;"
+        );
+
+        $stmt->bind_param("is", $data->benutzername, $data->email);
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        $userID = $array[0]['user_ID'];
+
+        // Überprüfen ob Benutzer existiert
+        if ($userID > 0) {
+
+            UserLog($userID, 'Password', 'Asked for password reset');
+
+            $result = TokenResetPassword($array);
+
+            return json_encode(array('success' => $result));
+        } else {
+            return json_encode(array('error' => 'user_not_exist'));
+        }
+    } catch (Exception $e) {
+        return json_encode(array('error' => $e->getMessage()));
+    }
+}
+
+function TokenResetPassword($data)
+{
+    $userID = $data[0]['user_ID'];
+
+    //Generate a random string.
+    $token = openssl_random_pseudo_bytes(32);
+
+    //Convert the binary data into hexadecimal representation.
+    $token = bin2hex($token);
+
+    $passwordState = 50;
+
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "UPDATE
+        " . USER_DB . ".users
+        SET " . USER_DB . ".users.pw_token = ?,
+        " . USER_DB . ".users.pw_timestamp = ?,
+        " . USER_DB . ".users.user_pw_state = ?
+        WHERE " . USER_DB . ".users.user_ID = ?;"
+        );
+
+        $stmt->bind_param("ssii", $token, date("Y-m-d h:i:s"), $passwordState, $userID);
+
+        $stmt->execute();
+
+        UserLog($userID, 'Password', 'Set password reset token');
+
+        // Mail Klasse einbinden
+        require_once dirname(__FILE__) . "/../lib/mail.class.php";
+
+        // Email bestätigen HTML einbinden
+        require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
+
+        $mail = new mail();
+
+        $mail->set_to_email($data[0]['user_email']);
+        $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
+        $mail->set_subject('BibleWiki | Email Adresse bestätigen');
+        $mail->set_body($reset_password_html);
+        $result = $mail->send_mail();
+
+        return $result;
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+}
+
+function CheckPasswordToken($userID, $token)
+{
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "SELECT
+        " . USER_DB . ".users.pw_token
+        FROM " . USER_DB . ".users 
+        WHERE " . USER_DB . ".users.user_ID = ?;"
+        );
+
+        $stmt->bind_param("i", $userID);
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        // Überprüfen ob Benutzer existiert
+        if ($array[0]['pw_token'] === $token) {
+            return 'valid';
+        } else {
+            return 'wrong_token';
+        }
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+}
+
+function ResetPassword($data)
+{
+    session_start();
+
+    $userID = $data->user;
+
+    if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token && $_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
+
+        // Passwort Versalzen
+        $salt = '_biblewikiloginsalt255%';
+        $salt_passwort = $data->passwort . $salt;
+        $user_passwort = hash('sha256', $salt_passwort);
+
+        $passwordState = 100;
+
+        try {
+            // Datenbankverbindung herstellen
+            $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+            $stmt = $_db->getDB()->stmt_init();
+
+            // Select definieren
+            $stmt = $_db->prepare(
+                "UPDATE
+        " . USER_DB . ".users
+        SET " . USER_DB . ".users.user_password = ?,
+        " . USER_DB . ".users.pw_token = NULL,
+        " . USER_DB . ".users.pw_timestamp = NULL,
+        " . USER_DB . ".users.user_pw_state = ?
+        WHERE " . USER_DB . ".users.user_ID = ?;"
+            );
+
+            $stmt->bind_param("ssi", $user_passwort, $passwordState, $userID);
+
+            $stmt->execute();
+
+            UserLog($userID, 'Password', 'Reset password sucess');
+
+            unset($_SESSION["password_token"]);
+            unset($_SESSION["password_user"]);
+            unset($_SESSION["token_valid"]);
+
+            unset($_COOKIE['PASSWORD_TOKEN']);
+            setcookie("PASSWORD_TOKEN", '', time() - 3600);
+            unset($_COOKIE['PASSWORD_USER']);
+            setcookie("PASSWORD_USER", '', time() - 3600);
+            unset($_COOKIE['TOKEN_VALID']);
+            setcookie("TOKEN_VALID", '', time() - 3600);
+            /*
+        // Mail Klasse einbinden
+        require_once dirname(__FILE__) . "/../lib/mail.class.php";
+
+        // Email bestätigen HTML einbinden
+        require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
+
+        $mail = new mail();
+
+        $mail->set_to_email($data[0]['user_email']);
+        $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
+        $mail->set_subject('BibleWiki | Email Adresse bestätigen');
+        $mail->set_body($reset_password_html);
+        $result = $mail->send_mail();
+*/
+            return json_encode(array('success' => $result));
+        } catch (Exception $e) {
+            return json_encode(array('error' => $e->getMessage()));
+        }
+    } else {
+        return json_encode(array('error' => 'pw_reset_failed'));
     }
 }
 
