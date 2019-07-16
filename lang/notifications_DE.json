@@ -14,8 +14,6 @@
             "title": "Fehler",
             "text": "Passwörter stimmen nicht überein."
         },
-
-
         "add_user_failed": {
             "title": "Fehler",
             "text": "Benutzer konnte nicht hizugefügt werden. Kontaktiere den Administrator."
@@ -34,10 +32,6 @@
             "title": "Fehler",
             "text": "Benutzer existiert nicht."
         },
-        "password_like_old_password"::{
-            "title": "Fehler",
-            "text": "Das Passwort darf nicht dein altes Passwort sein."
-        },
         "password_reset": {
             "title": "Fehler",
             "text": "Token stimmt nicht oder ist abgelaufen."
@@ -45,6 +39,10 @@
         "pw_reset_failed": {
             "title": "Fehler",
             "text": "Passwort konnte nicht zurückgesetzt werden."
+        },
+        "pw_reset_token_expired": {
+            "title": "Fehler",
+            "text": "Zu lange gewartet. Du musst innerhalb von 2 Minuten dein neues Passwort setzen. Öffne den Link aus der Mail erneut."
         }
     },
     "success": {

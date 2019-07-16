@@ -21,9 +21,9 @@ if ($userID != '' && $token != '') {
         $_SESSION["password_user"] = $userID;
         $_SESSION["token_valid"] = $result;
 
-        setcookie("PASSWORD_TOKEN", $token, time() + 300, '/');
-        setcookie("PASSWORD_USER", $userID, time() + 300, '/');
-        setcookie("TOKEN_VALID", $result, time() + 300, '/');
+        setcookie("PASSWORD_TOKEN", $token, time() + 120, '/');
+        setcookie("PASSWORD_USER", $userID, time() + 120, '/');
+        setcookie("TOKEN_VALID", $result, time() + 120, '/');
     } else {
         header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
         exit;

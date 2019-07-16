@@ -255,7 +255,7 @@ function TokenResetPassword($data)
         WHERE " . USER_DB . ".users.user_ID = ?;"
         );
 
-        $stmt->bind_param("ssii", $token, date("Y-m-d h:i:s"), $passwordState, $userID);
+        $stmt->bind_param("ssii", $token, date("Y-m-d H:i:s"), $passwordState, $userID);
 
         $stmt->execute();
 
@@ -275,6 +275,10 @@ function TokenResetPassword($data)
         $mail->set_body($reset_password_html);
         $result = $mail->send_mail();
 
+        if ($result === 'success') {
+            UserLog($userID, 'Password', 'Send confirm password reset mail success');
+        }
+
         return $result;
     } catch (Exception $e) {
         return $e->getMessage();
@@ -283,6 +287,7 @@ function TokenResetPassword($data)
 
 function CheckPasswordToken($userID, $token)
 {
+    UserLog($userID, 'Password', 'Password reset Link opened');
     try {
         // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
@@ -304,8 +309,10 @@ function CheckPasswordToken($userID, $token)
 
         // Überprüfen ob Benutzer existiert
         if ($array[0]['pw_token'] === $token) {
+            UserLog($userID, 'Password', 'Password reset token valid');
             return 'valid';
         } else {
+            UserLog($userID, 'Password', 'Password reset wrong token');
             return 'wrong_token';
         }
     } catch (Exception $e) {
@@ -319,71 +326,80 @@ function ResetPassword($data)
 
     $userID = $data->user;
 
-    //return json_encode(array('error' => $data->token));
-    if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token && $_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
-        //return json_encode(array('error' => 'why'));
-        // Passwort Versalzen
-        $salt = '_biblewikiloginsalt255%';
-        $salt_passwort = $data->passwort . $salt;
-        $user_passwort = hash('sha256', $salt_passwort);
+    if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token) {
+        if ($_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
 
-        $passwordState = 100;
+            // Passwort Versalzen
+            $salt = '_biblewikiloginsalt255%';
+            $salt_passwort = $data->passwort . $salt;
+            $user_passwort = hash('sha256', $salt_passwort);
 
-        try {
-            // Datenbankverbindung herstellen
-            $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
-            $stmt = $_db->getDB()->stmt_init();
+            $passwordState = 100;
 
-            // Select definieren
-            $stmt = $_db->prepare(
-                "UPDATE
+            try {
+                // Datenbankverbindung herstellen
+                $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+                $stmt = $_db->getDB()->stmt_init();
+
+                // Select definieren
+                $stmt = $_db->prepare(
+                    "UPDATE
         " . USER_DB . ".users
         SET " . USER_DB . ".users.user_password = ?,
         " . USER_DB . ".users.pw_token = NULL,
         " . USER_DB . ".users.pw_timestamp = NULL,
         " . USER_DB . ".users.user_pw_state = ?
         WHERE " . USER_DB . ".users.user_ID = ?;"
-            );
+                );
 
-            $stmt->bind_param("ssi", $user_passwort, $passwordState, $userID);
+                $stmt->bind_param("ssi", $user_passwort, $passwordState, $userID);
 
-            $stmt->execute();
+                $stmt->execute();
 
-            UserLog($userID, 'Password', 'Reset password sucess');
+                UserLog($userID, 'Password', 'Reset password sucess');
 
-            unset($_SESSION["password_token"]);
-            unset($_SESSION["password_user"]);
-            unset($_SESSION["token_valid"]);
+                unset($_SESSION["password_token"]);
+                unset($_SESSION["password_user"]);
+                unset($_SESSION["token_valid"]);
 
-            unset($_COOKIE['PASSWORD_TOKEN']);
-            setcookie("PASSWORD_TOKEN", '', time() - 3600, '/');
-            unset($_COOKIE['PASSWORD_USER']);
-            setcookie("PASSWORD_USER", '', time() - 3600, '/');
-            unset($_COOKIE['TOKEN_VALID']);
-            setcookie("TOKEN_VALID", '', time() - 3600, '/');
+                unset($_COOKIE['PASSWORD_TOKEN']);
+                setcookie("PASSWORD_TOKEN", '', time() - 3600, '/');
+                unset($_COOKIE['PASSWORD_USER']);
+                setcookie("PASSWORD_USER", '', time() - 3600, '/');
+                unset($_COOKIE['TOKEN_VALID']);
+                setcookie("TOKEN_VALID", '', time() - 3600, '/');
 
-            // Mail Klasse einbinden
-            require_once dirname(__FILE__) . "/../lib/mail.class.php";
+                // Mail Klasse einbinden
+                require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
-            // Email bestätigen HTML einbinden
-            require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
+                // Email bestätigen HTML einbinden
+                require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
 
-            $userData = GetUserData($userID);
+                $userData = GetUserData($userID);
 
-            $mail = new mail();
+                $mail = new mail();
 
-            $mail->set_to_email($userData['user_email']);
-            $mail->set_to_name($userData['user_firstname'] . ' ' . $userData['user_lastname']);
-            $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
-            $mail->set_body($reset_password_confirmed_html);
-            $result = $mail->send_mail();
+                $mail->set_to_email($userData['user_email']);
+                $mail->set_to_name($userData['user_firstname'] . ' ' . $userData['user_lastname']);
+                $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
+                $mail->set_body($reset_password_confirmed_html);
+                $result = $mail->send_mail();
 
-            return json_encode(array('success' => $result));
-        } catch (Exception $e) {
-            return json_encode(array('error' => $e->getMessage()));
+                if ($result === 'success') {
+                    UserLog($userID, 'Password', 'Send password reset successfull mail success');
+                }
+
+                return json_encode(array('success' => $result));
+            } catch (Exception $e) {
+                return json_encode(array('error' => $e->getMessage()));
+            }
+        } else {
+            UserLog($userID, 'Password', 'Password reset failed', 'Cookie and session variables not match');
+            return json_encode(array('error' => 'pw_reset_failed'));
         }
     } else {
-        return json_encode(array('error' => 'pw_reset_failed'));
+        UserLog($userID, 'Password', 'Password reset failed', 'Session expired');
+        return json_encode(array('error' => 'pw_reset_token_expired'));
     }
 }
 
