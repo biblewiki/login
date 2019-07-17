@@ -69,8 +69,12 @@
     "info": {
         "_comment6": "Login",
         "login_expired": {
-            "title": "Session abgelaufen",
+            "title": "Sitzung abgelaufen",
             "text": "Melde dich erneut an."
+        },
+        "login_not_logged_in": {
+            "title": "Nicht eingeloggt",
+            "text": "Melde dich mit deinen Logindaten an."
         },
         "_comment7": "Registrieren",
         "login_confirm_email": {

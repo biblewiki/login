@@ -684,12 +684,12 @@ function SessionStart($userID, $userData, $method)
     $_SESSION["level"] = $userData['user_level'];
     $_SESSION["picture"] = $userData['user_picture'];
 
-    setcookie("LOGGEDIN", 'true', time() + 3600 * 24, '/', ".biblewiki.one", 0);
-    setcookie("ID", $userID, time() + 3600 * 24, '/', ".biblewiki.one", 0);
-    setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
-    setcookie("LASTNAME", $_SESSION["lastname"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
-    setcookie("LEVEL", $_SESSION["level"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
-    setcookie("PICTURE", $_SESSION["picture"], time() + 3600 * 24, '/', ".biblewiki.one", 0);
+    setcookie("LOGGEDIN", 'true', time() + 1800, '/', ".biblewiki.one", 0);
+    setcookie("ID", $userID, time() + 1800, '/', ".biblewiki.one", 0);
+    setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 1800, '/', ".biblewiki.one", 0);
+    setcookie("LASTNAME", $_SESSION["lastname"], time() + 1800, '/', ".biblewiki.one", 0);
+    setcookie("LEVEL", $_SESSION["level"], time() + 1800, '/', ".biblewiki.one", 0);
+    setcookie("PICTURE", $_SESSION["picture"], time() + 1800, '/', ".biblewiki.one", 0);
 
     $result = UserLog($userID, $method);
 
