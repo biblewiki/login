@@ -32,6 +32,10 @@
             "title": "Fehler",
             "text": "Benutzer existiert nicht."
         },
+        "already_send_email": {
+            "title": "Fehler",
+            "text": "Es wurde bereits eine Mail zum Zurücksetzen deines Passwortes gesendet. Wenn du diese nicht mehr hast, melde dich beim Administrator. Überprüfe auch deinen SPAM Ordner"
+        },
         "password_reset": {
             "title": "Fehler",
             "text": "Token stimmt nicht oder ist abgelaufen."
@@ -82,7 +86,7 @@
             "text": "Bestätige deine Email Adresse in der Mail die wir dir geschickt haben."
         },
         "comment3.1": "Passwort zurücksetzen",
-        "password_reset_confirm_email": {
+        "password_reset_confirm_reset_email": {
             "title": "Passwort zurücksetzen",
             "text": "Bestätige das Passwort zurücksetzen in der Mail die wir dir geschickt haben."
         }

@@ -1,4 +1,6 @@
 <?php
+// Domain without https:// !!!
+define(HOST_DOMAIN, "biblewiki.one");
 
 // Edit page address
 define(EDIT_HOST, "https://edit.joel.biblewiki.one");

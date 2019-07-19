@@ -1,16 +1,21 @@
 <?php
 // DB_Connect einbinden
-require_once dirname(__FILE__) . '/async/db_connect.php';
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/db_connect.php');
 
 // Settings einbinden
-require_once dirname(__FILE__) . '/async/settings.php';
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+
 
 $userID = $_GET['user'];
 $token = $_GET['token'];
 
+// Überprüfen ob User und Token in der URL vorhanden sind
 if ($userID != '' && $token != '') {
+
+    // Überprüfen ob Token für User gültig sind
     $result = CheckPasswordToken($userID, $token);
 
+    // Wenn Token gültig
     if ($result === 'valid') {
 
         GetUserData($user);
@@ -25,11 +30,13 @@ if ($userID != '' && $token != '') {
         setcookie("PASSWORD_USER", $userID, time() + 120, '/');
         setcookie("TOKEN_VALID", $result, time() + 120, '/');
     } else {
-        header('LOCATION: ' . LOGIN_HOST . '?password_reset=error');
+        header('LOCATION: ' . LOGIN_HOST . '?password_reset=error'); // Weiterleiten nach Login mit Fehlercode
         exit;
     }
 } else {
+    // Weiterleiten nach Login
     header('LOCATION: ' . LOGIN_HOST);
+    exit;
 }
 
 ?>
@@ -39,11 +46,24 @@ if ($userID != '' && $token != '') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+
     <title>Passwort zurücksetzen | Biblewiki</title>
 
+
+    <!-- Include JQUERY -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Include Bootstrap 4 -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Include Font Awesome CSS und local CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link href="css/style.css" rel="stylesheet" />
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -53,9 +73,6 @@ if ($userID != '' && $token != '') {
     <!-- Passwort Sicherheitscheck -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="js/password_strenght.js"></script>
-
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="css/style.css" rel="stylesheet" />
 
 </head>
 
@@ -100,17 +117,20 @@ if ($userID != '' && $token != '') {
     </div>
     <script>
         $(document).ready(function() {
-            // Login Button Klick
 
+            // Login Button Klick
             $('#reset-btn').click(function() {
 
                 var user = "<?php echo $userID ?>";
                 var token = "<?php echo $token ?>";
                 var passwort = $('#passwort').val();
                 var passwort2 = $('#passwort_retype').val();
-                if (pwStrength >= 40) {
-                    if (passwort === passwort2) {
 
+                // Passwortsicherheit überprüfen
+                if (pwStrength >= 40) {
+
+                    // Überprüfen ob beide Passwörter identisch sind
+                    if (passwort === passwort2) {
 
                         var jsonTx = {
                             action: 'ResetPassword',
@@ -130,22 +150,25 @@ if ($userID != '' && $token != '') {
                             success: function(data) {
                                 if (data['error'] !== undefined) {
                                     console.log(data['error']);
-                                    notification('error', data['error']);
-                                } else {
-                                    window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=success');
+                                    notification('error', data['error']); // Fehler ausgeben
+                                }
+                                // Wenn erfolgreich weiterleiten
+                                else {
+                                    window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=' + data['success']);
                                 }
                             }
                         });
 
                     } else {
-                        notification('error', 'passwords_missmatch');
+                        notification('error', 'passwords_missmatch'); // Passwörter stimmen nicht überein
                     }
                 } else {
-                    notification('warning', 'password_parameter');
+                    notification('warning', 'password_parameter'); // Passwort zu unsicher
                 }
             });
         });
     </script>
+    <?php include('html/footer.html'); ?>
 </body>
 
 </html>

@@ -4,10 +4,12 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
 
+$telegramBotUsername = BOT_USERNAME;
+
+// Settings einbinden
 require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
 
-$bot_username = BOT_USERNAME;
-
+// Session starten
 session_start();
 ?>
 
@@ -17,21 +19,19 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+    
     <title>Login | BibleWiki</title>
-
-    <!-- Include Bootstrap 4 -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <!-- Include JQUERY -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-    <!--
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
--->
+    <!-- Include Bootstrap 4 -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <!-- Include Font Awesome CSS und local CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -55,11 +55,9 @@ session_start();
                 <div class="middle">
                     <div id="login">
 
-
-
                         <form action="javascript:void(0);" method="get">
                             <!-- Telegram Login Button -->
-                            <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $bot_username ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
+                            <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $telegramBotUsername ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
                             <!-- Google Login Button -->
                             <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
 
@@ -74,31 +72,31 @@ session_start();
                                 </div>
 
                             </fieldset>
-
-                            <div class="clearfix"></div>
                         </form>
-
-                        <div class="clearfix"></div>
-
-                    </div> <!-- end login -->
+                    </div>
+                    <!-- Zweite Spalte Logo -->
                     <div class="logo">
-                        <img src="img/biblewiki_weiss.svg" height="300px">
-                        <div class="clearfix"></div>
+                        <img src="img/biblewiki_weiss.svg" height="300vw">
                     </div>
                 </div>
             </center>
         </div>
 
     </div>
+
+    <!-- Script -->
     <script>
         $(document).ready(function() {
-            // Login Button Klick
+
+            // Login Button klick
             $('#login-btn').click(function() {
 
                 var benutzername = $('#benutzername').val();
                 var passwort = $('#passwort').val();
 
+                // Überprüfen ob Benutzername nicht leer ist
                 if (benutzername != '') {
+
                     var jsonTx = {
                         action: 'CheckPasswordUser',
                         data: {
@@ -114,43 +112,40 @@ session_start();
                         data: JSON.stringify(jsonTx),
                         success: function(data) {
                             if (data['error'] !== undefined) {
-                                notification('error', data['error']);
-                            } else if (data['action'] === 'Register') {
-                                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
-                                window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php");
-                            } else {
-                                window.location.replace('/async/refer.php?login=true');
-
+                                notification('error', data['error']); // Fehler anzeigen
+                            }
+                            // Wenn Benutzer noch nicht registriert ist
+                            else if (data['action'] === 'register') {
+                                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername); // Benutzername in Cookie schreiben
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + "/register.php"); // Auf Registrierseite weiterleiten
+                            }
+                            // Wenn User eingeloggt
+                            else if (data['success'] !== undefined) {
+                                window.location.replace('/async/refer.php?login=true'); // Weiterleiten wenn eingeloggt
                             }
                         }
                     });
-                } else {
+                }
+                // Benachrichtigung wenn kein Benutzername eingegeben wurde
+                else {
                     notification('warning', 'fields_emty');
                 }
             });
 
-
+            // Passwort vergessen Link klick
             $('#forgot_password').click(function() {
 
                 var benutzername = $('#benutzername').val();
 
-                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername);
-                window.location.replace("<?php echo LOGIN_HOST ?>" + "/forgot_password.php");
+                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername); // Benutzername in Cookie schreiben
+                window.location.replace("<?php echo LOGIN_HOST ?>" + "/forgot_password.php"); // Auf Passwort vergessen Seite weiterleiten
             });
 
         });
     </script>
-<script type="text/javascript" id="cookieinfo"
-	src="<?php echo EDIT_HOST ?>/js/accept_cookies.js"
-    data-message="Wir verwenden Cookies, um unsere Website und unseren Service zu optimieren."
-    data-linkmsg="Mehr erfahren"
-    data-moreinfo="<?php echo EDIT_HOST ?>/cookie_terms.php"
-    data-cookie="ACCEPT_COOKIES"
-    data-cookie-path="/"
-    data-cookie-domain=".biblewiki.one"
-    data-close-text="Einverstanden">
-</script>
 
+    <!-- Footer einbinden -->
+    <?php include('html/footer.html'); ?>
 
 </body>
 

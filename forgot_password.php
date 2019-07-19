@@ -1,7 +1,8 @@
 <?php
-// Include Settings
+// Settings einbinden
 require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
 
+// Benutzername aus Cookie lesen
 $benutzername = json_decode($_COOKIE['USERNAME']);
 ?>
 <html lang="en">
@@ -10,19 +11,29 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/main.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+    
     <title>Passwort vergesssen | Biblewiki</title>
 
+    <!-- Include JQUERY -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Include Bootstrap 4 -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Include Font Awesome CSS und local CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link href="css/style.css" rel="stylesheet" />
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
-
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="css/style.css" rel="stylesheet" />
 
 </head>
 
@@ -39,7 +50,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                             <fieldset class="clearfix">
 
                                 <p><span class="fa fa-user"></span><input id="benutzername" type="text" Placeholder="Benutzername" value="<?php echo $benutzername ?>" <?php echo (!empty($benutzername) ? 'disabled' : 'autofocus'); ?>></p>
-                                <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required <?php if(!empty($benutzername)) echo 'autofocus'; ?>></p>
+                                <p><span class="fa fa-envelope "></span><input id="email" type="email" Placeholder="Email" required <?php if (!empty($benutzername)) echo 'autofocus'; ?>></p>
 
                                 <div>
                                     <span style="width:52%; text-align:left;  display: inline-block;"></span>
@@ -47,13 +58,9 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                                 </div>
 
                             </fieldset>
-
-                            <div class="clearfix"></div>
                         </form>
-
-                        <div class="clearfix"></div>
-
-                    </div> <!-- end login -->
+                    </div>
+                    <!-- Zweite Spalte Logo -->
                     <div class="logo">
                         <img src="img/biblewiki_weiss.svg" height="300px">
                         <div class="clearfix"></div>
@@ -66,37 +73,45 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
     </div>
     <script>
         $(document).ready(function() {
-            // Login Button Klick
+            // Reset Button Klick
             $('#reset-btn').click(function() {
 
                 var benutzername = $('#benutzername').val();
                 var email = $('#email').val();
 
-                var jsonTx = {
-                    action: 'RequestResetPassword',
-                    data: {
-                        'benutzername': benutzername,
-                        'email': email
-                    }
-                };
+                // Überprüfen ob Benutzername und Email nicht leer ist
+                if (benutzername != '' && email != '') {
 
-                $.ajax({
-                    type: 'POST',
-                    url: 'async/db_connect.php',
-                    dataType: 'json',
-                    data: JSON.stringify(jsonTx),
-                    success: function(data) {
-                        if (data['error'] !== undefined) {
-                            notification('error', data['error']);
-                        } else {
-                            window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=confirm_email');
+                    var jsonTx = {
+                        action: 'RequestResetPassword',
+                        data: {
+                            'benutzername': benutzername,
+                            'email': email
                         }
-                    }
-                });
+                    };
 
+                    $.ajax({
+                        type: 'POST',
+                        url: 'async/db_connect.php',
+                        dataType: 'json',
+                        data: JSON.stringify(jsonTx),
+                        success: function(data) {
+                            if (data['error'] !== undefined) {
+                                notification('error', data['error']); // Fehler ausgeben
+                            }
+                            // Wenn erfolgreich weiterleiten
+                            else {
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=' + data['success']);
+                            }
+                        }
+                    });
+                } else {
+                    notification('warning', 'fields_emty'); // Nicht alle Felder sind ausgefüllt
+                }
             });
         });
     </script>
+    <?php include('html/footer.html'); ?>
 </body>
 
 </html>

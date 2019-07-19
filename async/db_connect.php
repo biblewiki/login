@@ -7,15 +7,19 @@ require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 // PHPMailer Pfad definieren
 $PHPMailerDir = $homedir . '/www/biblewiki.one/mail/PHPMailer';
 
+// PHPMailer Files einbinden
 require $PHPMailerDir . '/src/Exception.php';
 require $PHPMailerDir . '/src/PHPMailer.php';
 require $PHPMailerDir . '/src/SMTP.php';
 
 // Log-Script einbinden
-require_once dirname(__FILE__) . '/log.php';
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/log.php');
+
+// Settings einbinden
+require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
 
 // Datenbank Klasse einbinden
-require_once dirname(__FILE__) . "/../lib/db.class.php";
+require_once($_SERVER['DOCUMENT_ROOT'] . '/lib/db.class.php');
 
 // AJAX Input decodieren
 $jsonTx = json_decode(file_get_contents("php://input"));
@@ -42,7 +46,6 @@ if ($jsonTx->action != "") {
 // Logindaten Web überprüfen
 function CheckPasswordUser($data)
 {
-
     // Passwort Versalzen
     $salt = '_biblewikiloginsalt255%';
     $salt_passwort = $data->passwort . $salt;
@@ -76,19 +79,25 @@ function CheckPasswordUser($data)
 
             $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['email_token']);
 
+            // Wenn eingeloggt Erfolg zurückgeben
             if ($result === 'loggedin') {
                 return json_encode(array('success' => $result));
-            } else {
+            }
+            // Sonst Fehler zurückgeben
+            else {
                 return json_encode(array('error' => $result));
             }
-        } else {
-            return json_encode(array('action' => 'Register'));
+        }
+        // Wenn Benutzer nicht existiert, Befehl zum registrieren zurückgeben
+        else {
+            return json_encode(array('action' => 'register'));
         }
     } catch (Exception $e) {
-        return json_encode(array('error' => $e->getMessage()));
+        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
 }
 
+// Passwort User hinzufügen
 function AddPasswordUser($data)
 {
 
@@ -110,9 +119,11 @@ function AddPasswordUser($data)
         $defaultUserState = '30';
         $defaultPicture = 'img/silhouette.png';
 
+        // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
 
+        // Insert definieren
         $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, email_token, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 
         $stmt->bind_param("sssissisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $token, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
@@ -126,12 +137,13 @@ function AddPasswordUser($data)
 
         $array = db::getTableAsArray($stmt);
 
-        $userID = $array[0]['LAST_INSERT_ID()'];
+        $userID = $array[0]['LAST_INSERT_ID()']; // Eingefügte ID
+
 
         // Überprüfen ob Benutzer existiert
         if ($userID > 0) {
 
-            UserLog($userID, 'Password', 'Add Password User');
+            UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
 
             // Mail Klasse einbinden
             require_once dirname(__FILE__) . "/../lib/mail.class.php";
@@ -145,22 +157,21 @@ function AddPasswordUser($data)
             $mail->set_to_name($data->vorname . ' ' . $data->nachname);
             $mail->set_subject('BibleWiki | Email Adresse bestätigen');
             $mail->set_body($confirm_email_html);
-            $result = $mail->send_mail();
+            $result = $mail->send_mail(); // Mail senden
 
+            // Wenn Mail erfolgreich gesendet
             if ($result === 'success') {
-                UserLog($userID, 'Password', 'Send confirm mail address email ' . $result);
-
-                return json_encode(array('action' => 'confirm_password'));
+                UserLog($userID, 'Password', 'Send confirm mail address email ' . $result); // Logeintrag
+                return json_encode(array('success' => 'confirm_email')); // Mailverification nötig
             } else {
-                UserLog($userID, 'Password', 'Send confirm mail address email failed', $result);
-
-                return json_encode(array('error' => 'email_failed'));
+                UserLog($userID, 'Password', 'Send confirm mail address email failed', $result); // Logeintrag
+                return json_encode(array('error' => 'email_failed')); // Email konnte nicht gesendet werden
             }
         } else {
-            return json_encode(array('error' => 'add_user_failed'));
+            return json_encode(array('error' => 'add_user_failed')); // USer konnte nicht hinzugefügt werden
         }
     } catch (Exception $e) {
-        return json_encode(array('error' => $e->getMessage()));
+        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
 }
 
@@ -176,16 +187,16 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
 
             return $result;
         } else {
-            UserLog($userID, 'Password', 'Email address not yet confirmed');
-            return 'email_not_confirmed';
+            UserLog($userID, 'Password', 'Email address not yet confirmed'); // Logeintrag
+            return 'email_not_confirmed'; // Emailadresse wurde noch nicht bestätigt
         }
     } else {
-        UserLog($userID, 'Password', 'Wrong Password');
-        return 'wrong_password';
+        UserLog($userID, 'Password', 'Wrong Password'); // Logeintrag
+        return 'wrong_password'; // Passwort ist falsch
     }
 }
 
-// Passwort reseten
+// Passwort reset Anfrage
 function RequestResetPassword($data)
 {
     try {
@@ -199,7 +210,8 @@ function RequestResetPassword($data)
         " . USER_DB . ".users.user_ID,
         " . USER_DB . ".users.user_firstname,
         " . USER_DB . ".users.user_lastname,
-        " . USER_DB . ".users.user_email
+        " . USER_DB . ".users.user_email,
+        " . USER_DB . ".users.pw_token
         FROM " . USER_DB . ".users 
         WHERE " . USER_DB . ".users.user_username = ? AND " . USER_DB . ".users.user_email = ?;"
         );
@@ -212,33 +224,45 @@ function RequestResetPassword($data)
 
         $userID = $array[0]['user_ID'];
 
-        // Überprüfen ob Benutzer existiert
+        // Wenn Benutzer existiert mit diesem Benutzername und Email existiert
         if ($userID > 0) {
 
-            UserLog($userID, 'Password', 'Asked for password reset');
+            // Überprüfen ob schon ein Reset Token existiert
+            if ($array[0]['pw_token'] === '') {
 
-            $result = TokenResetPassword($array);
+                UserLog($userID, 'Password', 'Asked for password reset'); // Logeintrag
 
-            return json_encode(array('success' => $result));
-        } else {
+                // Token erstellen und Mail versenden
+                $result = TokenResetPassword($array);
+
+                return json_encode(array('success' => $result)); // Resultat zurückgeben
+            }
+            // Token existiert bereits
+            else {
+                return json_encode(array('error' => 'already_send_email'));
+            }
+        }
+        // Benutzer existiert nicht mit diesem Benutzernamen und Email
+        else {
             return json_encode(array('error' => 'user_not_exist'));
         }
     } catch (Exception $e) {
-        return json_encode(array('error' => $e->getMessage()));
+        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
 }
 
+// Passwort Token erstelllen und Email senden
 function TokenResetPassword($data)
 {
     $userID = $data[0]['user_ID'];
 
-    //Generate a random string.
+    // Zufälliger String aus Zahlen und Buchstaben erstellen
     $token = openssl_random_pseudo_bytes(32);
 
-    //Convert the binary data into hexadecimal representation.
+    // Binär zu HEX konvertieren
     $token = bin2hex($token);
 
-    $passwordState = 50;
+    $passwordState = 50; // Passwortstatus setzen
 
     try {
         // Datenbankverbindung herstellen
@@ -259,7 +283,7 @@ function TokenResetPassword($data)
 
         $stmt->execute();
 
-        UserLog($userID, 'Password', 'Set password reset token');
+        UserLog($userID, 'Password', 'Set password reset token'); // Logeintrag
 
         // Mail Klasse einbinden
         require_once dirname(__FILE__) . "/../lib/mail.class.php";
@@ -273,21 +297,25 @@ function TokenResetPassword($data)
         $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
         $mail->set_subject('BibleWiki | Passwort zurücksetzen bestätigen');
         $mail->set_body($reset_password_html);
-        $result = $mail->send_mail();
+        $result = $mail->send_mail(); // Mail senden
 
+        // Wenn Mail erfolgreich gesendet wurde
         if ($result === 'success') {
-            UserLog($userID, 'Password', 'Send confirm password reset mail success');
+            UserLog($userID, 'Password', 'Send confirm password reset mail success'); // Logeintrag
+            return 'confirm_reset_email';
+        } else {
+            UserLog($userID, 'Password', 'Send confirm password reset mail failed'); // Logeintrag
+            return $result;
         }
-
-        return $result;
     } catch (Exception $e) {
         return $e->getMessage();
     }
 }
 
+// Passwort Token überprüfen
 function CheckPasswordToken($userID, $token)
 {
-    UserLog($userID, 'Password', 'Password reset Link opened');
+    UserLog($userID, 'Password', 'Password reset Link opened'); // Logeintrag
     try {
         // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
@@ -309,24 +337,28 @@ function CheckPasswordToken($userID, $token)
 
         // Überprüfen ob Benutzer existiert
         if ($array[0]['pw_token'] === $token) {
-            UserLog($userID, 'Password', 'Password reset token valid');
-            return 'valid';
+            UserLog($userID, 'Password', 'Password reset token valid'); // Logeintrag
+            return 'valid'; // gültig
         } else {
-            UserLog($userID, 'Password', 'Password reset wrong token');
-            return 'wrong_token';
+            UserLog($userID, 'Password', 'Password reset wrong token'); // Logeintrag
+            return 'wrong_token'; // ungültig
         }
     } catch (Exception $e) {
-        return $e->getMessage();
+        return $e->getMessage(); // Fehler zurückgeben
     }
 }
 
+// Passwort zurüksetzen
 function ResetPassword($data)
 {
     session_start();
 
     $userID = $data->user;
 
+    // Überprüfen ob der Passwort Token in der Session und im Cookie übereinstimmen
     if ($_SESSION['password_token'] === $data->token && $_COOKIE['PASSWORD_TOKEN'] === $data->token) {
+
+        // Überprüfen ob Passwort User und ob der Token gültig ist, in der Session und im Cookie übereinstimmen
         if ($_SESSION["password_user"] === $userID && $_COOKIE['PASSWORD_USER'] === $userID && $_SESSION['token_valid'] === $_COOKIE['TOKEN_VALID']) {
 
             // Passwort Versalzen
@@ -334,7 +366,7 @@ function ResetPassword($data)
             $salt_passwort = $data->passwort . $salt;
             $user_passwort = hash('sha256', $salt_passwort);
 
-            $passwordState = 100;
+            $passwordState = 100; // Passwortstatus setzen 
 
             try {
                 // Datenbankverbindung herstellen
@@ -344,20 +376,21 @@ function ResetPassword($data)
                 // Select definieren
                 $stmt = $_db->prepare(
                     "UPDATE
-        " . USER_DB . ".users
-        SET " . USER_DB . ".users.user_password = ?,
-        " . USER_DB . ".users.pw_token = NULL,
-        " . USER_DB . ".users.pw_timestamp = NULL,
-        " . USER_DB . ".users.user_pw_state = ?
-        WHERE " . USER_DB . ".users.user_ID = ?;"
+                    " . USER_DB . ".users
+                    SET " . USER_DB . ".users.user_password = ?,
+                    " . USER_DB . ".users.pw_token = NULL,
+                    " . USER_DB . ".users.pw_timestamp = NULL,
+                    " . USER_DB . ".users.user_pw_state = ?
+                    WHERE " . USER_DB . ".users.user_ID = ?;"
                 );
 
                 $stmt->bind_param("ssi", $user_passwort, $passwordState, $userID);
 
                 $stmt->execute();
 
-                UserLog($userID, 'Password', 'Reset password sucess');
+                UserLog($userID, 'Password', 'Reset password sucess'); // Logeintrag
 
+                // Sessionvariablen und Cookies zurücksetzen
                 unset($_SESSION["password_token"]);
                 unset($_SESSION["password_user"]);
                 unset($_SESSION["token_valid"]);
@@ -383,13 +416,16 @@ function ResetPassword($data)
                 $mail->set_to_name($userData['user_firstname'] . ' ' . $userData['user_lastname']);
                 $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
                 $mail->set_body($reset_password_confirmed_html);
-                $result = $mail->send_mail();
+                $result = $mail->send_mail(); // Mail senden
 
+                // Mail erfolgreich gesendet
                 if ($result === 'success') {
                     UserLog($userID, 'Password', 'Send password reset successfull mail success');
+                    return json_encode(array('success' => $result));
+                } else {
+                    return json_encode(array('error' => $result)); // Fehler zurückgeben
                 }
 
-                return json_encode(array('success' => $result));
             } catch (Exception $e) {
                 return json_encode(array('error' => $e->getMessage()));
             }
@@ -403,6 +439,7 @@ function ResetPassword($data)
     }
 }
 
+// Email Token überprüfen
 function CheckEmailToken($userID, $token)
 {
     try {
@@ -426,6 +463,8 @@ function CheckEmailToken($userID, $token)
 
         // Überprüfen ob Benutzer existiert
         if ($array[0]['email_token'] === $token) {
+
+            // User Email bestätigen
             return ConfirmUserEmail($userID, $token);
         } else {
             return 'failed';
@@ -435,9 +474,9 @@ function CheckEmailToken($userID, $token)
     }
 }
 
+// User Email bestätigt
 function ConfirmUserEmail($userID, $token)
 {
-
     $emailState = 100;
 
     try {
@@ -448,20 +487,19 @@ function ConfirmUserEmail($userID, $token)
         // Select definieren
         $stmt = $_db->prepare(
             "UPDATE
-        " . USER_DB . ".users
-        SET " . USER_DB . ".users.email_token = '',
-        " . USER_DB . ".users.user_email_state = ?
-        WHERE " . USER_DB . ".users.user_ID = ?;"
+            " . USER_DB . ".users
+            SET " . USER_DB . ".users.email_token = '',
+            " . USER_DB . ".users.user_email_state = ?
+            WHERE " . USER_DB . ".users.user_ID = ?;"
         );
 
         $stmt->bind_param("ii", $emailState, $userID);
 
         $stmt->execute();
 
-
         return 'success';
     } catch (Exception $e) {
-        return $e->getMessage();
+        return $e->getMessage(); // Fehler zurückgeben
     }
 }
 
@@ -498,10 +536,10 @@ function CheckGoogleUser($userData)
             $userData = GetUserData($array[0]['user_ID']);
             $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
 
-            return $result;
-            // Wenn nicht, wird er erstellt
-        } else {
-
+            return $result;    
+        }
+        // Wenn Benutzer nicht existiert, wird er erstellt
+        else {
             $result = AddGoogleUser($userData);
 
             return $result;
@@ -511,6 +549,7 @@ function CheckGoogleUser($userData)
     }
 }
 
+// Google User hinzufügen
 function AddGoogleUser($userData)
 {
     try {
@@ -519,9 +558,11 @@ function AddGoogleUser($userData)
         $defaultGoogleState = '50';
         $defaultGoogleEmailState = '100';
 
+        // Datenbankverbindung  herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
 
+        // Insert definieren
         $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, user_email_state, user_state, user_picture, id_google) VALUES (?,?,?,?,?,?,?,?,?);");
 
         $stmt->bind_param("sssisiisi", $userData['email'], $userData['given_name'], $userData['family_name'], $defaultLevel, $userData['email'], $defaultGoogleEmailState, $defaultGoogleState, $userData['picture'], $userData['id']);
@@ -535,9 +576,9 @@ function AddGoogleUser($userData)
 
         $array = db::getTableAsArray($stmt);
 
-        $userID = $array[0]['LAST_INSERT_ID()'];
+        $userID = $array[0]['LAST_INSERT_ID()']; // Eingefügte User ID
 
-        UserLog($userID, 'Google', 'Add Google User');
+        UserLog($userID, 'Google', 'Add Google User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
         $userData = GetUserData($userID);
@@ -545,7 +586,7 @@ function AddGoogleUser($userData)
 
         return $result;
     } catch (Exception $e) {
-        return $e->getMessage();
+        return $e->getMessage(); // Fehler zurückgeben
     }
 }
 
@@ -557,7 +598,6 @@ function AddGoogleUser($userData)
 function CheckTelegramUser($userData)
 {
     try {
-
         // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
@@ -565,9 +605,9 @@ function CheckTelegramUser($userData)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
-        " . USER_DB . ".users.user_ID
-        FROM " . USER_DB . ".users 
-        WHERE " . USER_DB . ".users.id_telegram = ?;"
+            " . USER_DB . ".users.user_ID
+            FROM " . USER_DB . ".users 
+            WHERE " . USER_DB . ".users.id_telegram = ?;"
         );
 
         $stmt->bind_param("s", $userData['id']);
@@ -582,14 +622,14 @@ function CheckTelegramUser($userData)
             $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
             return $result;
-            // Wenn nicht, wird er erstellt
+            // Wenn Benutzer nicht existiert, wird er erstellt
         } else {
             $result = AddTelegramUser($userData);
 
             return $result;
         }
     } catch (Exception $e) {
-        return json_encode(array('error' => $e->getMessage()));
+        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
 }
 
@@ -604,9 +644,11 @@ function AddTelegramUser($userData)
         $username = (isset($userData['username']) ? $userData['username'] : $userData['id']);
         $photo_url = (isset($userData['photo_url']) ? $userData['photo_url'] : 'img/silhouette.png');
 
+        // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
 
+        // Insert definieren
         $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_state, user_picture, id_telegram) VALUES (?,?,?,?,?,?,?);");
 
         $stmt->bind_param("sssiisi", $username, $userData['first_name'], $userData['last_name'], $defaultLevel, $defaultTelegramState, $photo_url, $userData['id']);
@@ -620,9 +662,9 @@ function AddTelegramUser($userData)
 
         $array = db::getTableAsArray($stmt);
 
-        $userID = $array[0]['LAST_INSERT_ID()'];
+        $userID = $array[0]['LAST_INSERT_ID()']; // Eingefügte User ID
 
-        UserLog($userID, 'Telegram', 'Add Telegram User');
+        UserLog($userID, 'Telegram', 'Add Telegram User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
         $userData = GetUserData($userID, 'Telegram');
@@ -630,7 +672,7 @@ function AddTelegramUser($userData)
 
         return $result;
     } catch (Exception $e) {
-        return $e->getMessage();
+        return $e->getMessage(); // Fehler zurückgeben
     }
 }
 
@@ -667,13 +709,13 @@ function GetUserData($userID)
 
         return $array[0];
     } catch (Exception $e) {
-        return $e->getMessage();
+        return $e->getMessage(); // Fehler zurückgeben
     }
 }
 
+// Session starten
 function SessionStart($userID, $userData, $method)
 {
-
     // Session starten
     session_start();
 
@@ -684,14 +726,16 @@ function SessionStart($userID, $userData, $method)
     $_SESSION["level"] = $userData['user_level'];
     $_SESSION["picture"] = $userData['user_picture'];
 
-    setcookie("LOGGEDIN", 'true', time() + 1800, '/', ".biblewiki.one", 0);
-    setcookie("ID", $userID, time() + 1800, '/', ".biblewiki.one", 0);
-    setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 1800, '/', ".biblewiki.one", 0);
-    setcookie("LASTNAME", $_SESSION["lastname"], time() + 1800, '/', ".biblewiki.one", 0);
-    setcookie("LEVEL", $_SESSION["level"], time() + 1800, '/', ".biblewiki.one", 0);
-    setcookie("PICTURE", $_SESSION["picture"], time() + 1800, '/', ".biblewiki.one", 0);
+    $domain = ".".HOST_DOMAIN;
 
-    $result = UserLog($userID, $method);
+    setcookie("LOGGEDIN", 'true', time() + 1800, '/', $domain);
+    setcookie("ID", $userID, time() + 1800, '/', $domain);
+    setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 1800, '/', $domain);
+    setcookie("LASTNAME", $_SESSION["lastname"], time() + 1800, '/', $domain);
+    setcookie("LEVEL", $_SESSION["level"], time() + 1800, '/', $domain);
+    setcookie("PICTURE", $_SESSION["picture"], time() + 1800, '/', $domain);
+
+    UserLog($userID, $method, 'login'); // Logeintrag
 
     return "loggedin";
 }
