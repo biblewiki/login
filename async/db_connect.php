@@ -113,7 +113,7 @@ function AddPasswordUser($data)
     $token = bin2hex($token);
 
     try {
-        $defaultLevel = '50';
+        $defaultLevel = '5';
         $defaultPasswortState = '100';
         $defaultEmailState = '10';
         $defaultUserState = '30';
@@ -554,7 +554,7 @@ function AddGoogleUser($userData)
 {
     try {
         // Standardwerte definieren
-        $defaultLevel = '50';
+        $defaultLevel = '5';
         $defaultGoogleState = '50';
         $defaultGoogleEmailState = '100';
 
@@ -638,7 +638,7 @@ function AddTelegramUser($userData)
 
     try {
         // Standardwerte definieren
-        $defaultLevel = '50';
+        $defaultLevel = '5';
         $defaultTelegramState = '30';
 
         $username = (isset($userData['username']) ? $userData['username'] : $userData['id']);
@@ -691,15 +691,18 @@ function GetUserData($userID)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
-        " . USER_DB . ".users.user_ID,
-        " . USER_DB . ".users.user_firstname,
-        " . USER_DB . ".users.user_lastname,
-        " . USER_DB . ".users.user_email,
-        " . USER_DB . ".users.user_level,
-        " . USER_DB . ".users.user_picture
-        FROM " . USER_DB . ".users 
-        WHERE " . USER_DB . ".users.user_ID = ?;"
+            " . USER_DB . ".users.user_ID,
+            " . USER_DB . ".users.user_firstname,
+            " . USER_DB . ".users.user_lastname,
+            " . USER_DB . ".users.user_email,
+            " . USER_DB . ".user_levels.level_name,
+            " . USER_DB . ".users.user_picture
+            FROM " . USER_DB . ".users
+            INNER JOIN user_levels ON user_levels.level_ID = users.user_level
+            WHERE " . USER_DB . ".users.user_ID = ?;"
         );
+
+        
 
         $stmt->bind_param("i", $userID);
 
@@ -723,7 +726,7 @@ function SessionStart($userID, $userData, $method)
     $_SESSION["id"] = $userID;
     $_SESSION["firstname"] = $userData['user_firstname'];
     $_SESSION["lastname"] = $userData['user_lastname'];
-    $_SESSION["level"] = $userData['user_level'];
+    $_SESSION["level"] = $userData['level_name'];
     $_SESSION["picture"] = $userData['user_picture'];
 
     $domain = ".".HOST_DOMAIN;
