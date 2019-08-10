@@ -6,4 +6,4 @@ define(HOST_DOMAIN, "biblewiki.one");
 define(EDIT_HOST, "https://edit.joel.biblewiki.one");
 
 // Login page address
-define(LOGIN_HOST, "https://login.joel.biblewiki.one");
+define(LOGIN_HOST, "https://login.biblewiki.one");
