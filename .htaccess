@@ -1,9 +1,8 @@
-Require valid-user
-AuthType Basic
-AuthName 'user and password'
-AuthUserFile /home/mwepf1gm/www/biblewiki.one/michael/.htpasswd
-
 <If "req('Host') = 'login.josua.biblewiki.one'|| req('Host') = 'login.joel.biblewiki.one'">
+  Require valid-user
+  AuthType Basic
+  AuthName 'user and password'
+  AuthUserFile /home/mwepf1gm/www/biblewiki.one/michael/.htpasswd
 </If>
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
