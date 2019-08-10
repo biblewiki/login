@@ -101,7 +101,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                             }
                             // Wenn erfolgreich weiterleiten
                             else {
-                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?password_reset=' + data['success']);
+                                window.location.replace("<?php echo LOGIN_HOST ?>" + '?notif=confirm_reset_email');
                             }
                         }
                     });
