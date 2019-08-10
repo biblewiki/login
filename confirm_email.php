@@ -13,9 +13,9 @@ $result = CheckEmailToken($_GET['user'], $_GET['token']);
 // Wenn Token gültig war und Email bestätigt wurde
 if ($result === 'success'){
     UserLog($_GET['user'], 'Password', 'Email address confirmed success');
-    header('LOCATION: '.LOGIN_HOST.'?email_confirmed=success');
+    header('LOCATION: '.LOGIN_HOST.'?notif=email_confirmed&type=success');
     
 } else {
     UserLog($_GET['user'], 'Password', 'Email address confirmed failed');
-    header('LOCATION: '.LOGIN_HOST.'?email_confirmed=error');
+    header('LOCATION: '.LOGIN_HOST.'?notif=email_confirmed&type=error');
 }

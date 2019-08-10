@@ -228,7 +228,7 @@ function RequestResetPassword($data)
         if ($userID > 0) {
 
             // Überprüfen ob schon ein Reset Token existiert
-            if ($array[0]['pw_token'] === '') {
+            if ($array[0]['pw_token'] === NULL) {
 
                 UserLog($userID, 'Password', 'Asked for password reset'); // Logeintrag
 
@@ -425,7 +425,6 @@ function ResetPassword($data)
                 } else {
                     return json_encode(array('error' => $result)); // Fehler zurückgeben
                 }
-
             } catch (Exception $e) {
                 return json_encode(array('error' => $e->getMessage()));
             }
@@ -536,7 +535,7 @@ function CheckGoogleUser($userData)
             $userData = GetUserData($array[0]['user_ID']);
             $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
 
-            return $result;    
+            return $result;
         }
         // Wenn Benutzer nicht existiert, wird er erstellt
         else {
@@ -618,7 +617,7 @@ function CheckTelegramUser($userData)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $userData = GetUserData($array[0]['user_ID'], 'Telegram');
+            $userData = GetUserData($array[0]['user_ID']);
             $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
             return $result;
@@ -667,7 +666,7 @@ function AddTelegramUser($userData)
         UserLog($userID, 'Telegram', 'Add Telegram User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
-        $userData = GetUserData($userID, 'Telegram');
+        $userData = GetUserData($userID);
         $result = SessionStart($userID, $userData, 'Telegram');
 
         return $result;
@@ -681,28 +680,35 @@ function AddTelegramUser($userData)
 ##############################################################################
 
 // Benutzerinfos abrufen
-function GetUserData($userID)
+function GetUserData($userID, $select = NULL, $join = NULL)
 {
     try {
         // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
         $stmt = $_db->getDB()->stmt_init();
 
-        // Select definieren
-        $stmt = $_db->prepare(
-            "SELECT
-            " . USER_DB . ".users.user_ID,
-            " . USER_DB . ".users.user_firstname,
+        if ($select  === NULL) {
+            $select = USER_DB . ".users.user_firstname,
             " . USER_DB . ".users.user_lastname,
             " . USER_DB . ".users.user_email,
             " . USER_DB . ".user_levels.level_name,
-            " . USER_DB . ".users.user_picture
+            " . USER_DB . ".users.user_picture";
+        }
+
+        if ($join === NULL) {
+            $join = 'INNER JOIN user_levels ON user_levels.level_ID = users.user_level';
+        }
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "SELECT
+            " . $select . "
             FROM " . USER_DB . ".users
-            INNER JOIN user_levels ON user_levels.level_ID = users.user_level
+            " . $join . "
             WHERE " . USER_DB . ".users.user_ID = ?;"
         );
 
-        
+
 
         $stmt->bind_param("i", $userID);
 
@@ -722,21 +728,24 @@ function SessionStart($userID, $userData, $method)
     // Session starten
     session_start();
 
-    $_SESSION["loggedin"] = true;
+    //$_SESSION["loggedin"] = true;
     $_SESSION["id"] = $userID;
     $_SESSION["firstname"] = $userData['user_firstname'];
     $_SESSION["lastname"] = $userData['user_lastname'];
     $_SESSION["level"] = $userData['level_name'];
     $_SESSION["picture"] = $userData['user_picture'];
+    $_SESSION["loggedin"] = hash(sha256, $userID.$userData['user_firstname'].$userData['user_lastname'].$userData['level_name'].$userData['user_picture']);
+    
 
-    $domain = ".".HOST_DOMAIN;
+    $domain = "." . HOST_DOMAIN;
 
-    setcookie("LOGGEDIN", 'true', time() + 1800, '/', $domain);
+    // setcookie("LOGGEDIN", true, time() + 1800, '/', $domain);
     setcookie("ID", $userID, time() + 1800, '/', $domain);
     setcookie("FIRSTNAME", $_SESSION["firstname"], time() + 1800, '/', $domain);
     setcookie("LASTNAME", $_SESSION["lastname"], time() + 1800, '/', $domain);
     setcookie("LEVEL", $_SESSION["level"], time() + 1800, '/', $domain);
     setcookie("PICTURE", $_SESSION["picture"], time() + 1800, '/', $domain);
+    setcookie("LOGGEDIN", $_SESSION["loggedin"], time() + 1800, '/', $domain);
 
     UserLog($userID, $method, 'login'); // Logeintrag
 

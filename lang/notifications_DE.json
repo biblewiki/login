@@ -47,6 +47,11 @@
         "pw_reset_token_expired": {
             "title": "Fehler",
             "text": "Zu lange gewartet. Du musst innerhalb von 2 Minuten dein neues Passwort setzen. Öffne den Link aus der Mail erneut."
+        },
+        "_comment4": "Session",
+        "session_fail": {
+            "title": "Fehler in der Sitzung",
+            "text": "Melde dich erneut an."
         }
     },
     "success": {
@@ -55,7 +60,7 @@
             "title": "Login erfolgreich",
             "text": "Du hast dich erfolgreich eingeloggt."
         },
-        "logout": {
+        "loggedout": {
             "title": "Erfolgreich ausgeloggt",
             "text": "Du hast dich erfolgreich ausgeloggt."
         },
@@ -72,21 +77,21 @@
     },
     "info": {
         "_comment6": "Login",
-        "login_expired": {
+        "session_expired": {
             "title": "Sitzung abgelaufen",
             "text": "Melde dich erneut an."
         },
-        "login_not_logged_in": {
+        "not_logged_in": {
             "title": "Nicht eingeloggt",
             "text": "Melde dich mit deinen Logindaten an."
         },
         "_comment7": "Registrieren",
-        "login_confirm_email": {
+        "confirm_email": {
             "title": "Erfolgreich registriert",
             "text": "Bestätige deine Email Adresse in der Mail die wir dir geschickt haben."
         },
-        "comment3.1": "Passwort zurücksetzen",
-        "password_reset_confirm_reset_email": {
+        "comment3": "Passwort zurücksetzen",
+        "confirm_reset_email": {
             "title": "Passwort zurücksetzen",
             "text": "Bestätige das Passwort zurücksetzen in der Mail die wir dir geschickt haben."
         }

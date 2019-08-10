@@ -37,9 +37,16 @@ setcookie ("PICTURE", '', time() - 3600, '/', ".biblewiki.one");
 unset($_COOKIE['USERNAME']);
 setcookie ("USERNAME", '', time() - 3600);
 
-if (isset($_GET['login'])){
-    header('Location: /?login='.$_GET['login']);
+if (isset($_GET['notif'])){
+    
+    if (isset($_GET['type'])){
+        $type = '&type='.$_GET['type'];
+    } else {
+        $type='';
+    }
+    
+    header('Location: /?notif='.$_GET['notif'].$type);
 } else {
-    header('Location: /?logout=success');
+    header('Location: /?notif=loggedout&type=success');
 }
 session_destroy();

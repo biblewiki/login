@@ -121,7 +121,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
                                     if (data['error'] !== undefined) {
                                         notification('error', data['error']); // Fehler anzeigen
                                     } else {
-                                        window.location.replace("<?php echo LOGIN_HOST ?>" + '?login=' + data['success']); // Nach Login weiterleiten
+                                        window.location.replace("<?php echo LOGIN_HOST ?>" + '?notif=' + data['success']); // Nach Login weiterleiten
                                     }
                                 }
                             });

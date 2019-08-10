@@ -30,7 +30,7 @@ if ($userID != '' && $token != '') {
         setcookie("PASSWORD_USER", $userID, time() + 120, '/');
         setcookie("TOKEN_VALID", $result, time() + 120, '/');
     } else {
-        header('LOCATION: ' . LOGIN_HOST . '?password_reset=error'); // Weiterleiten nach Login mit Fehlercode
+        header('LOCATION: ' . LOGIN_HOST . '?notif=password_reset&type=error'); // Weiterleiten nach Login mit Fehlercode
         exit;
     }
 } else {
