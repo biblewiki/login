@@ -1,0 +1,113 @@
+{
+    "error": {
+        "_comment1": "Login",
+        "login": {
+            "title": "Login fehlgeschlagen",
+            "text": "Versuche es später noch einmal oder kontaktiere den Administrator."
+        },
+        "wrong_password": {
+            "title": "Login fehlgeschlagen",
+            "text": "Falsches Passwort."
+        },
+        "_comment2": "Registrieren",
+        "passwords_missmatch": {
+            "title": "Fehler",
+            "text": "Passwörter stimmen nicht überein."
+        },
+        "add_user_failed": {
+            "title": "Fehler",
+            "text": "Benutzer konnte nicht hizugefügt werden. Kontaktiere den Administrator."
+        },
+        "_comment3": "Email bestätigen",
+        "email_confirmed": {
+            "title": "Fehler",
+            "text": "Token stimmt nicht oder ist abgelaufen."
+        },
+        "email_not_confirmed": {
+            "title": "Fehler",
+            "text": "Email Adresse wurde noch nicht bestätigt."
+        },
+        "comment3.1": "Passwort zurücksetzen",
+        "user_not_exist": {
+            "title": "Fehler",
+            "text": "Benutzer existiert nicht."
+        },
+        "already_send_email": {
+            "title": "Fehler",
+            "text": "Es wurde bereits eine Mail zum Zurücksetzen deines Passwortes gesendet. Wenn du diese nicht mehr hast, melde dich beim Administrator. Überprüfe auch deinen SPAM Ordner"
+        },
+        "password_reset": {
+            "title": "Fehler",
+            "text": "Token stimmt nicht oder ist abgelaufen."
+        },
+        "pw_reset_failed": {
+            "title": "Fehler",
+            "text": "Passwort konnte nicht zurückgesetzt werden."
+        },
+        "pw_reset_token_expired": {
+            "title": "Fehler",
+            "text": "Zu lange gewartet. Du musst innerhalb von 2 Minuten dein neues Passwort setzen. Öffne den Link aus der Mail erneut."
+        },
+        "_comment4": "Session",
+        "session_fail": {
+            "title": "Fehler in der Sitzung",
+            "text": "Melde dich erneut an."
+        }
+    },
+    "success": {
+        "_comment4": "Login",
+        "login": {
+            "title": "Login erfolgreich",
+            "text": "Du hast dich erfolgreich eingeloggt."
+        },
+        "loggedout": {
+            "title": "Erfolgreich ausgeloggt",
+            "text": "Du hast dich erfolgreich ausgeloggt."
+        },
+        "_comment5": "Email bestätigen",
+        "email_confirmed": {
+            "title": "Email bestätigt",
+            "text": "Deine Email Adresse wurde erfolgreich bestätigt. Melde dich nun mit deinen Logindaten an."
+        },
+        "comment3.1": "Passwort zurücksetzen",
+        "password_reset": {
+            "title": "Passwort zurückgesetzt",
+            "text": "Dein Passwort wurde erfolgreich zurückgesetzt. Melde dich nun mit deinem neuen Paswort an."
+        }
+    },
+    "info": {
+        "_comment6": "Login",
+        "session_expired": {
+            "title": "Sitzung abgelaufen",
+            "text": "Melde dich erneut an."
+        },
+        "not_logged_in": {
+            "title": "Nicht eingeloggt",
+            "text": "Melde dich mit deinen Logindaten an."
+        },
+        "_comment7": "Registrieren",
+        "confirm_email": {
+            "title": "Erfolgreich registriert",
+            "text": "Bestätige deine Email Adresse in der Mail die wir dir geschickt haben."
+        },
+        "comment3": "Passwort zurücksetzen",
+        "confirm_reset_email": {
+            "title": "Passwort zurücksetzen",
+            "text": "Bestätige das Passwort zurücksetzen in der Mail die wir dir geschickt haben."
+        }
+    },
+    "warning": {
+        "fields_emty": {
+            "title": "Warnung",
+            "text": "Nicht alle Felder wurden ausgefült."
+        },
+        "password_emty": {
+            "title": "Warnung",
+            "text": "Passwort darf nicht leer sein."
+        },
+        "password_parameter": {
+            "title": "Warnung",
+            "text": "Passwort ist zu unsicher."
+        }
+    }
+}
