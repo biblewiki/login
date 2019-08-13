@@ -59,13 +59,13 @@ function CheckPasswordUser($data)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
-        " . USER_DB . ".users.user_ID,
-        " . USER_DB . ".users.user_password,
-        " . USER_DB . ".users.user_email_state,
-        " . USER_DB . ".users.email_token
-        FROM " . USER_DB . ".users 
-        WHERE " . USER_DB . ".users.user_username = ? OR " . USER_DB . ".users.user_email = ?
-        GROUP BY " . USER_DB . ".users.user_ID;"
+            " . USER_DB . ".users.user_ID,
+            " . USER_DB . ".users.user_password,
+            " . USER_DB . ".users.user_email_state,
+            " . USER_DB . ".users.email_token
+            FROM " . USER_DB . ".users 
+            WHERE " . USER_DB . ".users.user_username = ? OR " . USER_DB . ".users.user_email = ? 
+            GROUP BY " . USER_DB . ".users.user_ID;"
         );
 
         $stmt->bind_param("ss", $data->benutzername, $data->benutzername);
@@ -100,6 +100,10 @@ function CheckPasswordUser($data)
 // Passwort User hinzufügen
 function AddPasswordUser($data)
 {
+
+    $emailCheck = CheckEmailExist($data->email);
+
+    if ($emailCheck === false){
 
     // Passwort Versalzen
     $salt = '_biblewikiloginsalt255%';
@@ -173,6 +177,9 @@ function AddPasswordUser($data)
     } catch (Exception $e) {
         return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
+} else {
+    return json_encode(array('error' => 'email_exist')); // Fehler zurückgeben
+}
 }
 
 // Passwort überprüfen
@@ -193,6 +200,41 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
     } else {
         UserLog($userID, 'Password', 'Wrong Password'); // Logeintrag
         return 'wrong_password'; // Passwort ist falsch
+    }
+}
+
+// Überprüfen ob Email schon registriert ist
+function CheckEmailExist($email){
+    try {
+        // Datenbankverbindung herstellen
+        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+        $stmt = $_db->getDB()->stmt_init();
+
+        // Select definieren
+        $stmt = $_db->prepare(
+            "SELECT
+            " . USER_DB . ".users.user_ID
+            FROM " . USER_DB . ".users 
+            WHERE " . USER_DB . ".users.user_username = ? OR " . USER_DB . ".users.user_email = ?;"
+        );
+
+        $stmt->bind_param("ss", $email, $email);
+
+        $stmt->execute();
+
+        $array = db::getTableAsArray($stmt);
+
+        // Überprüfen ob ein User mit dieser Email existiert
+        if (isset($array[0]['user_ID'])) {
+                return true;
+            }
+        else {
+                return false;
+            
+        }
+
+    } catch (Exception $e) {
+        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
 }
 
