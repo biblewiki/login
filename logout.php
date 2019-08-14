@@ -7,7 +7,7 @@ require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 // Datenbank Classe einbinden
 require_once dirname(__FILE__) . "/lib/db.class.php";
 
-require_once dirname(__FILE__) . "/async/log.php";
+require_once dirname(__FILE__) . "/php/log.php";
 
 session_start();
 

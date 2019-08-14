@@ -4,8 +4,8 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir']; 
 require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
 
-// Login Check einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/db_connect.php');
+// DB Connect einbinden
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/db_connect.php');
 
 function checkTelegramAuthorization($auth_data) {
   $check_hash = $auth_data['hash'];
@@ -32,7 +32,7 @@ try {
   $result = CheckTelegramUser($auth_data);
   
   if ($result === "loggedin"){
-    header('Location: https://'.$_SERVER['HTTP_HOST'].'/async/refer.php?login=true');
+    header('Location: https://'.$_SERVER['HTTP_HOST'].'/php/refer.php?login=true');
   }
 
 } catch (Exception $e) {

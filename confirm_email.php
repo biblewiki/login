@@ -1,12 +1,12 @@
 <?php
 // DB_Connect einbinden
-require_once dirname(__FILE__) . '/async/db_connect.php';
+require_once dirname(__FILE__) . '/php/db_connect.php';
 
 // Settings einbinden
-require_once dirname(__FILE__) . '/async/settings.php';
+require_once dirname(__FILE__) . '/php/settings.php';
 
 // Log-Script einbinden
-require_once dirname(__FILE__) . '/async/log.php';
+require_once dirname(__FILE__) . '/php/log.php';
 
 $result = CheckEmailToken($_GET['user'], $_GET['token']);
 

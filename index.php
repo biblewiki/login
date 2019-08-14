@@ -7,7 +7,7 @@ require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
 $telegramBotUsername = BOT_USERNAME;
 
 // Settings einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
 
 // Session starten
 session_start();
@@ -16,6 +16,19 @@ session_start();
 <html lang="en">
 
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-145575129-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-145575129-2');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -23,7 +36,7 @@ session_start();
     <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
-    
+
     <title>Login | BibleWiki</title>
 
     <!-- Include JQUERY -->
@@ -39,11 +52,8 @@ session_start();
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
-    <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
-
-    <!-- Include Cookie-Script -->
-    <script src="<?php echo EDIT_HOST ?>/js/cookie.js"></script>
+    <link href="<?php echo SCRIPT_PATH ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo SCRIPT_PATH ?>/js/notifications.js"></script>
 
 </head>
 
@@ -57,9 +67,9 @@ session_start();
 
                         <form action="javascript:void(0);" method="get">
                             <!-- Telegram Login Button -->
-                            <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $telegramBotUsername ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="async/tauth.php" data-request-access="write"></script>
+                            <script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="<? echo $telegramBotUsername ?>" data-size="large" data-userpic="false" data-radius="3" data-auth-url="php/tauth.php" data-request-access="write"></script>
                             <!-- Google Login Button -->
-                            <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
+                            <a id="login-button" href="<?= 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode(GOOGLE_REDIRECT_PATH) . '&response_type=code&client_id=' . GOOGLE_CLIENT_ID . '&access_type=online' ?>"><img class="imgGoogle" src="img/btn_google_signin_dark_normal_web.png" width="100%"></a>
 
                             <fieldset class="clearfix">
 
@@ -107,7 +117,7 @@ session_start();
 
                     $.ajax({
                         type: 'POST',
-                        url: 'async/db_connect.php',
+                        url: 'php/db_connect.php',
                         dataType: 'json',
                         data: JSON.stringify(jsonTx),
                         success: function(data) {
@@ -121,7 +131,7 @@ session_start();
                             }
                             // Wenn User eingeloggt
                             else if (data['success'] !== undefined) {
-                                window.location.replace('/async/refer.php?login=true'); // Weiterleiten wenn eingeloggt
+                                window.location.replace('/php/refer.php?login=true'); // Weiterleiten wenn eingeloggt
                             }
                         }
                     });

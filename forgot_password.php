@@ -1,6 +1,6 @@
 <?php
 // Settings einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
 
 // Benutzername aus Cookie lesen
 $benutzername = json_decode($_COOKIE['USERNAME']);
@@ -8,6 +8,19 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 <html lang="en">
 
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-145575129-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-145575129-2');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -16,7 +29,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
     <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
-    
+
     <title>Passwort vergesssen | Biblewiki</title>
 
     <!-- Include JQUERY -->
@@ -92,7 +105,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 
                     $.ajax({
                         type: 'POST',
-                        url: 'async/db_connect.php',
+                        url: 'php/db_connect.php',
                         dataType: 'json',
                         data: JSON.stringify(jsonTx),
                         success: function(data) {

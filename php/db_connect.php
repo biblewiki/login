@@ -13,10 +13,10 @@ require $PHPMailerDir . '/src/PHPMailer.php';
 require $PHPMailerDir . '/src/SMTP.php';
 
 // Log-Script einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/log.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/log.php');
 
 // Settings einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
 
 // Datenbank Klasse einbinden
 require_once($_SERVER['DOCUMENT_ROOT'] . '/lib/db.class.php');

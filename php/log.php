@@ -4,7 +4,7 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 
-function UserLog($userID, $method, $action = 'undefined', $error = '')
+function UserLog($userID = 0, $method, $action = 'undefined', $error = '')
 {
 
     $hostname = gethostname();

@@ -1,6 +1,6 @@
 <?php
 // Settings einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/async/settings.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
 
 // Benutzername aus Cookie lesen
 $benutzername = json_decode($_COOKIE['USERNAME']);
@@ -8,6 +8,19 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 <html lang="en">
 
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-145575129-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-145575129-2');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -27,8 +40,8 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
-    <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
+    <link href="<?php echo SCRIPT_PATH ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo SCRIPT_PATH ?>/js/notifications.js"></script>
 
     <!-- Passwort Sicherheitscheck -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
@@ -114,7 +127,7 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 
                             $.ajax({
                                 type: 'POST',
-                                url: 'async/db_connect.php',
+                                url: 'php/db_connect.php',
                                 dataType: 'json',
                                 data: JSON.stringify(jsonTx),
                                 success: function(data) {
