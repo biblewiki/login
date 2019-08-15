@@ -9,6 +9,10 @@
             "title": "Login fehlgeschlagen",
             "text": "Falsches Passwort."
         },
+        "user_inactive": {
+            "title": "User inaktiv",
+            "text": "Dein User ist nicht aktiv."
+        },
         "_comment2": "Registrieren",
         "passwords_missmatch": {
             "title": "Fehler",

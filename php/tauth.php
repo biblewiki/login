@@ -1,13 +1,14 @@
 <?php
 // Telegram API Daten einbinden
-$user = posix_getpwuid(posix_getuid()); 
-$homedir = $user['dir']; 
-require_once ($homedir.'/config/biblewiki/biblewiki_bottoken.php');
+$user = posix_getpwuid(posix_getuid());
+$homedir = $user['dir'];
+require_once($homedir . '/config/biblewiki/biblewiki_bottoken.php');
 
 // DB Connect einbinden
 require_once($_SERVER['DOCUMENT_ROOT'] . '/php/db_connect.php');
 
-function checkTelegramAuthorization($auth_data) {
+function checkTelegramAuthorization($auth_data)
+{
   $check_hash = $auth_data['hash'];
   unset($auth_data['hash']);
   $data_check_arr = [];
@@ -30,11 +31,12 @@ function checkTelegramAuthorization($auth_data) {
 try {
   $auth_data = checkTelegramAuthorization($_GET);
   $result = CheckTelegramUser($auth_data);
-  
-  if ($result === "loggedin"){
-    header('Location: https://'.$_SERVER['HTTP_HOST'].'/php/refer.php?login=true');
-  }
 
+  if ($result === "loggedin") {
+    header('Location: https://' . $_SERVER['HTTP_HOST'] . '/php/refer.php?login=true');
+  } else {
+    header('Location: ' . LOGIN_HOST . '?type=error&notif=' . $result);
+  }
 } catch (Exception $e) {
-  die ($e->getMessage());
+  die($e->getMessage());
 }

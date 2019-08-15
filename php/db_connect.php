@@ -62,7 +62,8 @@ function CheckPasswordUser($data)
             " . USER_DB . ".users.user_ID,
             " . USER_DB . ".users.user_password,
             " . USER_DB . ".users.user_email_state,
-            " . USER_DB . ".users.email_token
+            " . USER_DB . ".users.email_token,
+            " . USER_DB . ".users.user_state
             FROM " . USER_DB . ".users 
             WHERE " . USER_DB . ".users.user_username = ? OR " . USER_DB . ".users.user_email = ? 
             GROUP BY " . USER_DB . ".users.user_ID;"
@@ -77,7 +78,7 @@ function CheckPasswordUser($data)
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
 
-            $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['email_token']);
+            $result = CheckData($array[0]['user_password'], $user_passwort, $array[0]['user_ID'], $array[0]['user_email_state'], $array[0]['email_token'], $array[0]['user_state']);
 
             // Wenn eingeloggt Erfolg zurückgeben
             if ($result === 'loggedin') {
@@ -103,96 +104,101 @@ function AddPasswordUser($data)
 
     $emailCheck = CheckEmailExist($data->email);
 
-    if ($emailCheck === false){
+    if ($emailCheck === false) {
 
-    // Passwort Versalzen
-    $salt = '_biblewikiloginsalt255%';
-    $salt_passwort = $data->passwort . $salt;
-    $user_passwort = hash('sha256', $salt_passwort);
+        // Passwort Versalzen
+        $salt = '_biblewikiloginsalt255%';
+        $salt_passwort = $data->passwort . $salt;
+        $user_passwort = hash('sha256', $salt_passwort);
 
-    //Generate a random string.
-    $token = openssl_random_pseudo_bytes(32);
+        //Generate a random string.
+        $token = openssl_random_pseudo_bytes(32);
 
-    //Convert the binary data into hexadecimal representation.
-    $token = bin2hex($token);
+        //Convert the binary data into hexadecimal representation.
+        $token = bin2hex($token);
 
-    try {
-        $defaultLevel = '5';
-        $defaultPasswortState = '100';
-        $defaultEmailState = '10';
-        $defaultUserState = '30';
-        $defaultPicture = 'img/silhouette.png';
+        try {
+            $defaultLevel = '5';
+            $defaultPasswortState = '100';
+            $defaultEmailState = '10';
+            $defaultUserState = '30';
+            $defaultPicture = 'img/silhouette.png';
 
-        // Datenbankverbindung herstellen
-        $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
-        $stmt = $_db->getDB()->stmt_init();
+            // Datenbankverbindung herstellen
+            $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
+            $stmt = $_db->getDB()->stmt_init();
 
-        // Insert definieren
-        $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, email_token, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
+            // Insert definieren
+            $stmt = $_db->prepare("INSERT INTO " . USER_DB . ".users (user_username, user_firstname, user_lastname, user_level, user_email, email_token, user_email_state, user_password, user_state, user_pw_state, user_picture) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 
-        $stmt->bind_param("sssissisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $token, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
+            $stmt->bind_param("sssissisiis", $data->benutzername, $data->vorname, $data->nachname, $defaultLevel, $data->email, $token, $defaultEmailState, $user_passwort, $defaultUserState, $defaultPasswortState, $defaultPicture);
 
-        $stmt->execute();
+            $stmt->execute();
 
-        // Eingefügte ID auslesen
-        $stmt = $_db->prepare("SELECT LAST_INSERT_ID();");
+            // Eingefügte ID auslesen
+            $stmt = $_db->prepare("SELECT LAST_INSERT_ID();");
 
-        $stmt->execute();
+            $stmt->execute();
 
-        $array = db::getTableAsArray($stmt);
+            $array = db::getTableAsArray($stmt);
 
-        $userID = $array[0]['LAST_INSERT_ID()']; // Eingefügte ID
+            $userID = $array[0]['LAST_INSERT_ID()']; // Eingefügte ID
 
 
-        // Überprüfen ob Benutzer existiert
-        if ($userID > 0) {
+            // Überprüfen ob Benutzer existiert
+            if ($userID > 0) {
 
-            UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
+                UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
 
-            // Mail Klasse einbinden
-            require_once dirname(__FILE__) . "/../lib/mail.class.php";
+                // Mail Klasse einbinden
+                require_once dirname(__FILE__) . "/../lib/mail.class.php";
 
-            // Email bestätigen HTML einbinden
-            require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
+                // Email bestätigen HTML einbinden
+                require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
 
-            $mail = new mail();
+                $mail = new mail();
 
-            $mail->set_to_email($data->email);
-            $mail->set_to_name($data->vorname . ' ' . $data->nachname);
-            $mail->set_subject('BibleWiki | Email Adresse bestätigen');
-            $mail->set_body($confirm_email_html);
-            $result = $mail->send_mail(); // Mail senden
+                $mail->set_to_email($data->email);
+                $mail->set_to_name($data->vorname . ' ' . $data->nachname);
+                $mail->set_subject('BibleWiki | Email Adresse bestätigen');
+                $mail->set_body($confirm_email_html);
+                $result = $mail->send_mail(); // Mail senden
 
-            // Wenn Mail erfolgreich gesendet
-            if ($result === 'success') {
-                UserLog($userID, 'Password', 'Send confirm mail address email ' . $result); // Logeintrag
-                return json_encode(array('success' => 'confirm_email')); // Mailverification nötig
+                // Wenn Mail erfolgreich gesendet
+                if ($result === 'success') {
+                    UserLog($userID, 'Password', 'Send confirm mail address email ' . $result); // Logeintrag
+                    return json_encode(array('success' => 'confirm_email')); // Mailverification nötig
+                } else {
+                    UserLog($userID, 'Password', 'Send confirm mail address email failed', $result); // Logeintrag
+                    return json_encode(array('error' => 'email_failed')); // Email konnte nicht gesendet werden
+                }
             } else {
-                UserLog($userID, 'Password', 'Send confirm mail address email failed', $result); // Logeintrag
-                return json_encode(array('error' => 'email_failed')); // Email konnte nicht gesendet werden
+                return json_encode(array('error' => 'add_user_failed')); // USer konnte nicht hinzugefügt werden
             }
-        } else {
-            return json_encode(array('error' => 'add_user_failed')); // USer konnte nicht hinzugefügt werden
+        } catch (Exception $e) {
+            return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
         }
-    } catch (Exception $e) {
-        return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
+    } else {
+        return json_encode(array('error' => 'email_exist')); // Fehler zurückgeben
     }
-} else {
-    return json_encode(array('error' => 'email_exist')); // Fehler zurückgeben
-}
 }
 
 // Passwort überprüfen
-function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
+function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken, $userState)
 {
 
     // Überprüfen ob das Passwort stimmt
     if ($password === $passwordCheck) {
         if ($emailState === 100 && $emailToken == '') {
-            $userData = GetUserData($userID);
-            $result = SessionStart($userID, $userData, 'Password');
 
-            return $result;
+            if ($userState > 0) {
+                $userData = GetUserData($userID);
+                $result = SessionStart($userID, $userData, 'Password');
+
+                return $result;
+            } else {
+                return 'user_inactive';
+             }
         } else {
             UserLog($userID, 'Password', 'Email address not yet confirmed'); // Logeintrag
             return 'email_not_confirmed'; // Emailadresse wurde noch nicht bestätigt
@@ -204,7 +210,8 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken)
 }
 
 // Überprüfen ob Email schon registriert ist
-function CheckEmailExist($email){
+function CheckEmailExist($email)
+{
     try {
         // Datenbankverbindung herstellen
         $_db = new db(USER_DB_URL, USER_DB_USER, USER_DB_PW, USER_DB);
@@ -226,13 +233,10 @@ function CheckEmailExist($email){
 
         // Überprüfen ob ein User mit dieser Email existiert
         if (isset($array[0]['user_ID'])) {
-                return true;
-            }
-        else {
-                return false;
-            
+            return true;
+        } else {
+            return false;
         }
-
     } catch (Exception $e) {
         return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
     }
@@ -561,7 +565,8 @@ function CheckGoogleUser($userData)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
-        " . USER_DB . ".users.user_ID
+        " . USER_DB . ".users.user_ID,
+        " . USER_DB . ".users.user_state
         FROM " . USER_DB . ".users 
         WHERE " . USER_DB . ".users.id_google = ?;"
         );
@@ -574,10 +579,15 @@ function CheckGoogleUser($userData)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $userData = GetUserData($array[0]['user_ID']);
-            $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
+            if ($array[0]['user_state'] > 0) {
 
-            return $result;
+                $userData = GetUserData($array[0]['user_ID']);
+                $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
+
+                return $result;
+            } else {
+                return 'user_inactive';
+            }
         }
         // Wenn Benutzer nicht existiert, wird er erstellt
         else {
@@ -646,7 +656,8 @@ function CheckTelegramUser($userData)
         // Select definieren
         $stmt = $_db->prepare(
             "SELECT
-            " . USER_DB . ".users.user_ID
+            " . USER_DB . ".users.user_ID,
+        " . USER_DB . ".users.user_state
             FROM " . USER_DB . ".users 
             WHERE " . USER_DB . ".users.id_telegram = ?;"
         );
@@ -659,10 +670,14 @@ function CheckTelegramUser($userData)
 
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
-            $userData = GetUserData($array[0]['user_ID']);
-            $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
+            if ($array[0]['user_state'] > 0) {
+                $userData = GetUserData($array[0]['user_ID']);
+                $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
-            return $result;
+                return $result;
+            } else {
+                return 'user_inactive';
+            }
             // Wenn Benutzer nicht existiert, wird er erstellt
         } else {
             $result = AddTelegramUser($userData);
@@ -776,8 +791,8 @@ function SessionStart($userID, $userData, $method)
     $_SESSION["lastname"] = $userData['user_lastname'];
     $_SESSION["level"] = $userData['level_name'];
     $_SESSION["picture"] = $userData['user_picture'];
-    $_SESSION["loggedin"] = hash(sha256, $userID.$userData['user_firstname'].$userData['user_lastname'].$userData['level_name'].$userData['user_picture']);
-    
+    $_SESSION["loggedin"] = hash(sha256, $userID . $userData['user_firstname'] . $userData['user_lastname'] . $userData['level_name'] . $userData['user_picture']);
+
 
     $domain = "." . HOST_DOMAIN;
 
