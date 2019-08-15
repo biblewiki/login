@@ -80,8 +80,8 @@ if ($userID != '' && $token != '') {
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="<?php echo SCRIPT_PATH ?>/css/notifications.css" rel="stylesheet" />
-    <script src="<?php echo SCRIPT_PATH ?>/js/notifications.js"></script>
+    <link href="<?php echo SCRIPT_URL ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo SCRIPT_URL ?>/js/notifications.js"></script>
 
     <!-- Passwort Sicherheitscheck -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">

@@ -1,7 +1,7 @@
 {
     "error": {
         "_comment1": "Login",
-        "login": {
+        "login_error": {
             "title": "Login fehlgeschlagen",
             "text": "Versuche es später noch einmal oder kontaktiere den Administrator."
         },

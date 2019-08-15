@@ -52,8 +52,8 @@ session_start();
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="<?php echo SCRIPT_PATH ?>/css/notifications.css" rel="stylesheet" />
-    <script src="<?php echo SCRIPT_PATH ?>/js/notifications.js"></script>
+    <link href="<?php echo SCRIPT_URL ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo SCRIPT_URL ?>/js/notifications.js"></script>
 
 </head>
 

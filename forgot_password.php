@@ -45,8 +45,8 @@ $benutzername = json_decode($_COOKIE['USERNAME']);
 
     <!-- Inlude Toast Notifications -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <link href="<?php echo EDIT_HOST ?>/css/notifications.css" rel="stylesheet" />
-    <script src="<?php echo EDIT_HOST ?>/js/notifications.js"></script>
+    <link href="<?php echo SCRIPT_URL ?>/css/notifications.css" rel="stylesheet" />
+    <script src="<?php echo SCRIPT_URL ?>/js/notifications.js"></script>
 
 </head>
 
