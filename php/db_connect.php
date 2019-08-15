@@ -26,12 +26,13 @@ $jsonTx = json_decode(file_get_contents("php://input"));
 
 // Überprüfen ob eine Action gefordert wird
 if ($jsonTx->action != "") {
-    try {
-        $function = $jsonTx->action;
+
+    $function = $jsonTx->action;
+    if (function_exists($function)) {
         echo $function($jsonTx->data); // Funktion ausführen
         exit;
-    } catch (Exception $e) {
-        $ret = array('error' => 'Action not available');
+    } else {
+        $ret = array('error' => 'action_not_available');
         echo json_encode($ret);
         exit;
     }
@@ -198,7 +199,7 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken,
                 return $result;
             } else {
                 return 'user_inactive';
-             }
+            }
         } else {
             UserLog($userID, 'Password', 'Email address not yet confirmed'); // Logeintrag
             return 'email_not_confirmed'; // Emailadresse wurde noch nicht bestätigt

@@ -1,5 +1,9 @@
 {
     "error": {
+        "action_not_available": {
+            "title": "Fehler",
+            "text": "Kontaktiere den Administrator. Ferhlercode: action_not_available"
+        },
         "_comment1": "Login",
         "login_error": {
             "title": "Login fehlgeschlagen",
