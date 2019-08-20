@@ -1,5 +1,7 @@
 <?php
 session_start();
 
-echo $_COOKIE['PICTURE'];
+echo $_COOKIE['FIRSTNAME'].'<br>';
+echo $_SESSION['firstname'];
+
 ?>

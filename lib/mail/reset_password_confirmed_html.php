@@ -1,6 +1,6 @@
 <?php
 // Settings einbinden
-require_once dirname(__FILE__) . "../../../async/settings.php";
+require_once dirname(__FILE__) . "../../../php/settings.php";
 
 $login_host = LOGIN_HOST;
 $reset_password_confirmed_html = <<<EOT

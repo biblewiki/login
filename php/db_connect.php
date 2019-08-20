@@ -4,14 +4,6 @@ $user = posix_getpwuid(posix_getuid());
 $homedir = $user['dir'];
 require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
 
-// PHPMailer Pfad definieren
-$PHPMailerDir = $homedir . '/www/biblewiki.one/mail/PHPMailer';
-
-// PHPMailer Files einbinden
-require $PHPMailerDir . '/src/Exception.php';
-require $PHPMailerDir . '/src/PHPMailer.php';
-require $PHPMailerDir . '/src/SMTP.php';
-
 // Log-Script einbinden
 require_once($_SERVER['DOCUMENT_ROOT'] . '/php/log.php');
 
@@ -152,7 +144,8 @@ function AddPasswordUser($data)
                 UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
 
                 // Mail Klasse einbinden
-                require_once dirname(__FILE__) . "/../lib/mail.class.php";
+                global $homedir;
+                require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
 
                 // Email bestätigen HTML einbinden
                 require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
@@ -333,7 +326,8 @@ function TokenResetPassword($data)
         UserLog($userID, 'Password', 'Set password reset token'); // Logeintrag
 
         // Mail Klasse einbinden
-        require_once dirname(__FILE__) . "/../lib/mail.class.php";
+        global $homedir;
+        require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
 
         // Email bestätigen HTML einbinden
         require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
@@ -450,7 +444,8 @@ function ResetPassword($data)
                 setcookie("TOKEN_VALID", '', time() - 3600, '/');
 
                 // Mail Klasse einbinden
-                require_once dirname(__FILE__) . "/../lib/mail.class.php";
+                global $homedir;
+                require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
 
                 // Email bestätigen HTML einbinden
                 require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
@@ -543,7 +538,19 @@ function ConfirmUserEmail($userID, $token)
 
         $stmt->execute();
 
-        return 'success';
+        // Mail Klasse einbinden
+        global $homedir;
+        require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
+
+        $mail = new mail();
+
+        $mail->set_to_email('joelkohler@outlook.com');
+        $mail->set_to_name('Joel Kohler');
+        $mail->set_subject('BibleWiki | Neuer User registriert');
+        $mail->set_body('Es hat sich ein neuer User registriert');
+        $result = $mail->send_mail(); // Mail senden
+
+        return $result;
     } catch (Exception $e) {
         return $e->getMessage(); // Fehler zurückgeben
     }
