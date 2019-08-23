@@ -6,7 +6,7 @@ require_once dirname(__FILE__) . '/php/db_connect.php';
 require_once dirname(__FILE__) . '/php/settings.php';
 
 // Log-Script einbinden
-require_once dirname(__FILE__) . '/php/log.php';
+require_once SCRIPT_PATH . '/php/log.php';
 
 $result = CheckEmailToken($_GET['user'], $_GET['token']);
 

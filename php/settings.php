@@ -11,10 +11,12 @@ define(LOGIN_HOST, "https://login.joel.biblewiki.one");
 // Scripts URL
 define(SCRIPT_URL, "https://www.joel.biblewiki.one/script");
 
-// Scripts Path
+// Home DIR
 $user = posix_getpwuid(posix_getuid());
-$homedir = $user['dir'];
-define(SCRIPT_PATH, $homedir . "/www/biblewiki.one/joel/www/script");
+define(HOME_DIR, $user['dir']);
+
+// Scripts Path
+define(SCRIPT_PATH, HOME_DIR . "/www/biblewiki.one/joel/www/script");
 
 // Google auth redirect Path
 define('GOOGLE_REDIRECT_PATH', 'https://login.joel.biblewiki.one/php/gauth.php');

@@ -1,17 +1,22 @@
 <?php
-// User Datenbank Logindaten einbinden
-$user = posix_getpwuid(posix_getuid());
-$homedir = $user['dir'];
-require_once($homedir . '/config/biblewiki/db_biblewiki_users.php');
+// Settings einbinden
+require_once $_SERVER['DOCUMENT_ROOT'] . '/php/settings.php';
 
 // Log-Script einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/php/log.php');
+require_once SCRIPT_PATH . '/php/log.php';
 
-// Settings einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
+// User Datenbank Logindaten einbinden
+require_once HOME_DIR . '/config/biblewiki/db_biblewiki_users.php';
 
 // Datenbank Klasse einbinden
-require_once($_SERVER['DOCUMENT_ROOT'] . '/lib/db.class.php');
+require_once SCRIPT_PATH . '/php/db.class.php';
+
+// Mail Klasse einbinden
+require_once SCRIPT_PATH . '/php/mail.class.php';
+
+// User DB-Abfrage einbinden
+require_once SCRIPT_PATH .'/php/db_user.php';
+
 
 // AJAX Input decodieren
 $jsonTx = json_decode(file_get_contents("php://input"));
@@ -143,17 +148,12 @@ function AddPasswordUser($data)
 
                 UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
 
-                // Mail Klasse einbinden
-                global $homedir;
-                require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
-
                 // Email bestätigen HTML einbinden
                 require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
 
                 $mail = new mail();
 
-                $mail->set_to_email($data->email);
-                $mail->set_to_name($data->vorname . ' ' . $data->nachname);
+                $mail->set_to_userID($userID);
                 $mail->set_subject('BibleWiki | Email Adresse bestätigen');
                 $mail->set_body($confirm_email_html);
                 $result = $mail->send_mail(); // Mail senden
@@ -167,7 +167,7 @@ function AddPasswordUser($data)
                     return json_encode(array('error' => 'email_failed')); // Email konnte nicht gesendet werden
                 }
             } else {
-                return json_encode(array('error' => 'add_user_failed')); // USer konnte nicht hinzugefügt werden
+                return json_encode(array('error' => 'add_user_failed')); // User konnte nicht hinzugefügt werden
             }
         } catch (Exception $e) {
             return json_encode(array('error' => $e->getMessage())); // Fehler zurückgeben
@@ -186,7 +186,7 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken,
         if ($emailState === 100 && $emailToken == '') {
 
             if ($userState > 0) {
-                $userData = GetUserData($userID);
+                $userData = GetData($userID);
                 $result = SessionStart($userID, $userData, 'Password');
 
                 return $result;
@@ -325,17 +325,12 @@ function TokenResetPassword($data)
 
         UserLog($userID, 'Password', 'Set password reset token'); // Logeintrag
 
-        // Mail Klasse einbinden
-        global $homedir;
-        require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
-
         // Email bestätigen HTML einbinden
         require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
 
         $mail = new mail();
 
-        $mail->set_to_email($data[0]['user_email']);
-        $mail->set_to_name($data[0]['user_firstname'] . ' ' . $data[0]['user_lastname']);
+        $mail->set_to_userID($userID);
         $mail->set_subject('BibleWiki | Passwort zurücksetzen bestätigen');
         $mail->set_body($reset_password_html);
         $result = $mail->send_mail(); // Mail senden
@@ -443,19 +438,14 @@ function ResetPassword($data)
                 unset($_COOKIE['TOKEN_VALID']);
                 setcookie("TOKEN_VALID", '', time() - 3600, '/');
 
-                // Mail Klasse einbinden
-                global $homedir;
-                require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
-
                 // Email bestätigen HTML einbinden
                 require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
 
-                $userData = GetUserData($userID);
+                $userData = GetData($userID);
 
                 $mail = new mail();
 
-                $mail->set_to_email($userData['user_email']);
-                $mail->set_to_name($userData['user_firstname'] . ' ' . $userData['user_lastname']);
+                $mail->set_to_userID($userID);
                 $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
                 $mail->set_body($reset_password_confirmed_html);
                 $result = $mail->send_mail(); // Mail senden
@@ -538,16 +528,11 @@ function ConfirmUserEmail($userID, $token)
 
         $stmt->execute();
 
-        // Mail Klasse einbinden
-        global $homedir;
-        require_once $homedir . '/www/biblewiki.one/joel/www/script/mail/mail.class.php';
-
         $mail = new mail();
 
-        $mail->set_to_email('joelkohler@outlook.com');
-        $mail->set_to_name('Joel Kohler');
+        $mail->set_to_userID(1);
         $mail->set_subject('BibleWiki | Neuer User registriert');
-        $mail->set_body('Es hat sich ein neuer User registriert');
+        $mail->set_body('Es hat sich ein neuer User registriert mit der ID:' . $userID);
         $result = $mail->send_mail(); // Mail senden
 
         return $result;
@@ -589,7 +574,7 @@ function CheckGoogleUser($userData)
         if (isset($array[0]['user_ID'])) {
             if ($array[0]['user_state'] > 0) {
 
-                $userData = GetUserData($array[0]['user_ID']);
+                $userData = GetData($array[0]['user_ID']);
                 $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
 
                 return $result;
@@ -640,7 +625,7 @@ function AddGoogleUser($userData)
         UserLog($userID, 'Google', 'Add Google User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
-        $userData = GetUserData($userID);
+        $userData = GetData($userID);
         $result = SessionStart($userID, $userData, 'Google');
 
         return $result;
@@ -679,7 +664,7 @@ function CheckTelegramUser($userData)
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
             if ($array[0]['user_state'] > 0) {
-                $userData = GetUserData($array[0]['user_ID']);
+                $userData = GetData($array[0]['user_ID']);
                 $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
                 return $result;
@@ -731,7 +716,7 @@ function AddTelegramUser($userData)
         UserLog($userID, 'Telegram', 'Add Telegram User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
-        $userData = GetUserData($userID);
+        $userData = GetData($userID);
         $result = SessionStart($userID, $userData, 'Telegram');
 
         return $result;
@@ -745,7 +730,7 @@ function AddTelegramUser($userData)
 ##############################################################################
 
 // Benutzerinfos abrufen
-function GetUserData($userID, $select = NULL, $join = NULL)
+function GetData($userID, $select = NULL, $join = NULL)
 {
     try {
         // Datenbankverbindung herstellen
