@@ -3,7 +3,7 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/php/settings.php');
 
 // Benutzername aus Cookie lesen
-$benutzername = json_decode($_COOKIE['USERNAME']);
+$benutzername = $_COOKIE['USERNAME'];
 ?>
 <html lang="en">
 

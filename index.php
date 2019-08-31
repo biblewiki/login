@@ -29,6 +29,7 @@ session_start();
         gtag('config', 'UA-145575129-2');
     </script>
 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -55,6 +56,14 @@ session_start();
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="<?php echo SCRIPT_URL ?>/css/notifications.css" rel="stylesheet" />
     <script src="<?php echo SCRIPT_URL ?>/js/notifications.js"></script>
+
+    <!-- Inlude Cookie Script -->
+    <script src="<?php echo SCRIPT_URL ?>/js/cookie.js"></script>
+
+    <!-- Set Language Cookie -->
+    <script>
+        createCookie('LANGUAGE', 'DE', 8000);
+    </script>
 
 </head>
 
@@ -148,7 +157,8 @@ session_start();
 
                 var benutzername = $('#benutzername').val();
 
-                document.cookie = 'USERNAME = ' + JSON.stringify(benutzername); // Benutzername in Cookie schreiben
+                //document.cookie = 'USERNAME = ' + JSON.stringify(benutzername); // Benutzername in Cookie schreiben
+                createCookie('USERNAME', 'benutzername');
                 window.location.replace("<?php echo LOGIN_HOST ?>" + "/forgot_password.php"); // Auf Passwort vergessen Seite weiterleiten
             });
 

@@ -15,7 +15,7 @@ require_once SCRIPT_PATH . '/php/db.class.php';
 require_once SCRIPT_PATH . '/php/mail.class.php';
 
 // User DB-Abfrage einbinden
-require_once SCRIPT_PATH .'/php/db_user.php';
+require_once SCRIPT_PATH . '/php/db_user.php';
 
 
 // AJAX Input decodieren
@@ -35,7 +35,6 @@ if ($jsonTx->action != "") {
     }
     exit;
 }
-
 
 ##############################################################################
 #   Passwort Login
@@ -148,14 +147,19 @@ function AddPasswordUser($data)
 
                 UserLog($userID, 'Password', 'Add Password User'); // Logeintrag
 
-                // Email bestätigen HTML einbinden
-                require_once dirname(__FILE__) . "/../lib/mail/confirm_email_html.php";
+                $email_text = getEmailText();
 
                 $mail = new mail();
 
                 $mail->set_to_userID($userID);
-                $mail->set_subject('BibleWiki | Email Adresse bestätigen');
-                $mail->set_body($confirm_email_html);
+                $mail->set_subject($email_text["login"]["confirm_email"]["subject"]);
+                $mail->set_preheader($email_text["login"]["confirm_email"]["preheader"]);
+                $mail->set_heading($email_text["login"]["confirm_email"]["heading"]);
+                $mail->set_text($email_text["login"]["confirm_email"]["text"]);
+                $mail->set_button_text($email_text["login"]["confirm_email"]["button_text"]);
+                $mail->set_button_link(LOGIN_HOST . '/confirm_email.php?user=' . $userID . '&token=' . $token);
+                $mail->set_end_text($email_text["login"]["confirm_email"]["end_text"] . '</p><p><a href="' . LOGIN_HOST . '/confirm_email.php?user=' . $userID . '&token=' . $token . '">' . LOGIN_HOST . '/confirm_email.php?user=' . $userID . '&token=' . $token . '</a>');
+
                 $result = $mail->send_mail(); // Mail senden
 
                 // Wenn Mail erfolgreich gesendet
@@ -164,7 +168,7 @@ function AddPasswordUser($data)
                     return json_encode(array('success' => 'confirm_email')); // Mailverification nötig
                 } else {
                     UserLog($userID, 'Password', 'Send confirm mail address email failed', $result); // Logeintrag
-                    return json_encode(array('error' => 'email_failed')); // Email konnte nicht gesendet werden
+                    return json_encode(array('error' => $result)); // Email konnte nicht gesendet werden
                 }
             } else {
                 return json_encode(array('error' => 'add_user_failed')); // User konnte nicht hinzugefügt werden
@@ -186,7 +190,7 @@ function CheckData($password, $passwordCheck, $userID, $emailState, $emailToken,
         if ($emailState === 100 && $emailToken == '') {
 
             if ($userState > 0) {
-                $userData = GetData($userID);
+                $userData = GetUserData($userID);
                 $result = SessionStart($userID, $userData, 'Password');
 
                 return $result;
@@ -325,14 +329,19 @@ function TokenResetPassword($data)
 
         UserLog($userID, 'Password', 'Set password reset token'); // Logeintrag
 
-        // Email bestätigen HTML einbinden
-        require_once dirname(__FILE__) . "/../lib/mail/reset_password_html.php";
+        $email_text = getEmailText();
 
         $mail = new mail();
 
         $mail->set_to_userID($userID);
-        $mail->set_subject('BibleWiki | Passwort zurücksetzen bestätigen');
-        $mail->set_body($reset_password_html);
+        $mail->set_subject($email_text["login"]["password_reset_confirm"]["subject"]);
+        $mail->set_preheader($email_text["login"]["password_reset_confirm"]["preheader"]);
+        $mail->set_heading($email_text["login"]["password_reset_confirm"]["heading"]);
+        $mail->set_text($email_text["login"]["password_reset_confirm"]["text"]);
+        $mail->set_button_text($email_text["login"]["password_reset_confirm"]["button_text"]);
+        $mail->set_button_link(LOGIN_HOST . '/reset_password.php?user=' . $userID . '&token=' . $token);
+        $mail->set_end_text($email_text["login"]["password_reset_confirm"]["end_text"] . '</p><p><a href="' . LOGIN_HOST . '/reset_password.php?user=' . $userID . '&token=' . $token . '">' . LOGIN_HOST . '/reset_password.php?user=' . $userID . '&token=' . $token . '</a>');
+
         $result = $mail->send_mail(); // Mail senden
 
         // Wenn Mail erfolgreich gesendet wurde
@@ -438,16 +447,19 @@ function ResetPassword($data)
                 unset($_COOKIE['TOKEN_VALID']);
                 setcookie("TOKEN_VALID", '', time() - 3600, '/');
 
-                // Email bestätigen HTML einbinden
-                require_once dirname(__FILE__) . "/../lib/mail/reset_password_confirmed_html.php";
-
-                $userData = GetData($userID);
+                $email_text = getEmailText();
 
                 $mail = new mail();
 
                 $mail->set_to_userID($userID);
-                $mail->set_subject('BibleWiki | Passwort wurde zurückgesetzt');
-                $mail->set_body($reset_password_confirmed_html);
+                $mail->set_subject($email_text["login"]["password_reseted"]["subject"]);
+                $mail->set_preheader($email_text["login"]["password_reseted"]["preheader"]);
+                $mail->set_heading($email_text["login"]["password_reseted"]["heading"]);
+                $mail->set_text($email_text["login"]["password_reseted"]["text"]);
+                $mail->set_button_text($email_text["login"]["password_reseted"]["button_text"]);
+                $mail->set_button_link(LOGIN_HOST);
+                $mail->set_end_text($email_text["login"]["password_reseted"]["end_text"]);
+
                 $result = $mail->send_mail(); // Mail senden
 
                 // Mail erfolgreich gesendet
@@ -528,11 +540,19 @@ function ConfirmUserEmail($userID, $token)
 
         $stmt->execute();
 
+        $email_text = getEmailText();
+
         $mail = new mail();
 
         $mail->set_to_userID(1);
-        $mail->set_subject('BibleWiki | Neuer User registriert');
-        $mail->set_body('Es hat sich ein neuer User registriert mit der ID:' . $userID);
+        $mail->set_subject($email_text["login"]["new_user"]["subject"]);
+        $mail->set_preheader($email_text["login"]["new_user"]["preheader"]);
+        $mail->set_heading($email_text["login"]["new_user"]["heading"]);
+        $mail->set_text($email_text["login"]["new_user"]["text"]);
+        $mail->set_button_text($email_text["login"]["new_user"]["button_text"]);
+        $mail->set_button_link(EDIT_HOST . '/admin/users.php');
+        $mail->set_end_text($email_text["login"]["new_user"]["end_text"]);
+
         $result = $mail->send_mail(); // Mail senden
 
         return $result;
@@ -574,7 +594,7 @@ function CheckGoogleUser($userData)
         if (isset($array[0]['user_ID'])) {
             if ($array[0]['user_state'] > 0) {
 
-                $userData = GetData($array[0]['user_ID']);
+                $userData = GetUserData($array[0]['user_ID']);
                 $result = SessionStart($array[0]['user_ID'], $userData, 'Google');
 
                 return $result;
@@ -625,7 +645,7 @@ function AddGoogleUser($userData)
         UserLog($userID, 'Google', 'Add Google User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
-        $userData = GetData($userID);
+        $userData = GetUserData($userID);
         $result = SessionStart($userID, $userData, 'Google');
 
         return $result;
@@ -664,7 +684,7 @@ function CheckTelegramUser($userData)
         // Überprüfen ob Benutzer existiert
         if (isset($array[0]['user_ID'])) {
             if ($array[0]['user_state'] > 0) {
-                $userData = GetData($array[0]['user_ID']);
+                $userData = GetUserData($array[0]['user_ID']);
                 $result = SessionStart($array[0]['user_ID'], $userData, 'Telegram');
 
                 return $result;
@@ -716,7 +736,7 @@ function AddTelegramUser($userData)
         UserLog($userID, 'Telegram', 'Add Telegram User'); // Logeintrag
 
         // Userdaten auslesen und dann Session starten
-        $userData = GetData($userID);
+        $userData = GetUserData($userID);
         $result = SessionStart($userID, $userData, 'Telegram');
 
         return $result;
@@ -730,7 +750,7 @@ function AddTelegramUser($userData)
 ##############################################################################
 
 // Benutzerinfos abrufen
-function GetData($userID, $select = NULL, $join = NULL)
+function GetUserData($userID, $select = NULL, $join = NULL)
 {
     try {
         // Datenbankverbindung herstellen
@@ -770,6 +790,18 @@ function GetData($userID, $select = NULL, $join = NULL)
     } catch (Exception $e) {
         return $e->getMessage(); // Fehler zurückgeben
     }
+}
+
+function getEmailText()
+{
+    // Sprache auslesen
+    $language = $_COOKIE['LANGUAGE'];
+
+    // Email Textfile laden und auslesen
+    $json = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/lang/email_'.$language.'.json');
+    $email_text = json_decode($json, true);
+
+    return $email_text;
 }
 
 // Session starten

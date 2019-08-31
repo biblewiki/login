@@ -1,0 +1,42 @@
+{
+    "login": {
+        "confirm_email": {
+            "subject" : "BibleWiki | Email Adresse bestätigen",
+            "title": "Email bestätigen",
+            "preheader": "BibleWiki Email Adresse bestätigen",
+            "heading": "Bestätige deine Email Adresse",
+            "text": "Drücke auf den Button um deine Email Adresse zu bestätigen.",
+            "button_text": "Email Adresse bestätigen",
+            "end_text": "Wenn es nicht funktioniert, kopiere diesen Link und füge ihn direkt im Browser ein:"
+            
+        },
+        "new_user": {
+            "subject" : "BibleWiki | Neuer Benutzer registriert",
+            "title": "Neuer Benutzer",
+            "preheader": "BibleWiki neuer Benutzer registriert",
+            "heading": "Neuer BibleWiki Benutzer registriert",
+            "text": "Drücke auf den Button um dem neuen User Rechte zu verleihen.",
+            "button_text": "User befördern",
+            "end_text": "Der User kann nichts machen, bis du ihm Rechte verleihst."
+            
+        },
+        "password_reset_confirm": {
+            "subject" : "BibleWiki | Passwort zurücksetzen",
+            "title": "Passwort zurücksetzen",
+            "preheader": "BibleWiki Passwort zurücksetzen",
+            "heading": "Passwort zurücksetzen",
+            "text": "Drücke auf den Button um dein Passwort zurückzusetzen.",
+            "button_text": "Passwort zurücksetzen",
+            "end_text": "Wenn du dein Passwort nicht zurücksetzen willst, ignoriere diese Email.</p><p>Wenn es nicht funktioniert, kopiere diesen Link und füge ihn direkt im Browser ein:"
+        },
+        "password_reseted": {
+            "subject" : "BibleWiki | Passwort zurückgesetzt",
+            "title": "Passwort zurückgesetzt",
+            "preheader": "BibleWiki Passwort erfolgreich zurückgesetzt",
+            "heading": "Passwort erfolgreich zurückgesetzt",
+            "text": "Drücke auf den Button um dich anzumelden.",
+            "button_text": "Anmelden",
+            "end_text": "Wenn du dein Passwort nicht zurückgesetzt hast, melde dich beim Administartor!"
+        }
+    }
+}

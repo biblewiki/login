@@ -4,6 +4,10 @@
             "title": "Fehler",
             "text": "Kontaktiere den Administrator. Ferhlercode: action_not_available"
         },
+        "email_failed": {
+            "title": "Fehler",
+            "text": "Email konnte nicht versendet werden."
+        },
         "_comment1": "Login",
         "login_error": {
             "title": "Login fehlgeschlagen",
