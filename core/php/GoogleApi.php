@@ -1,6 +1,6 @@
 <?php
 
-class GoogleLoginApi
+class GoogleApi
 {
 	public function GetAccessToken($client_id, $redirect_uri, $client_secret, $code)
 	{
