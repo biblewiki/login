@@ -15,7 +15,10 @@ $jsonTx = json_decode(file_get_contents("php://input"));
 // Überprüfen ob eine Action gefordert wird
 if ($jsonTx->action != "") {
 
+    // Funktion auslesen
     $function = $jsonTx->action;
+
+    // Überprüfen ob die Funktion existiert
     if (function_exists($function)) {
 
         // DB öffnen
@@ -43,111 +46,292 @@ if ($jsonTx->action != "") {
             $session = new Session();
         }
 
+        // Daten auslesen
         $data = json_decode(json_encode($jsonTx->data), true);
-        echo json_encode($function($db, $session, $data, $biwi_config)); // Funktion ausführen
+
+        // Funktion ausführen
+        $return = json_encode($function($db, $session, $data, $biwi_config));
+
+        // Session schreiben
         $_SESSION["biwi"] = $session;
+
+        // Daten zurückgeben
+        echo $return;
         exit;
     } else {
-        $ret = ['errorMsg' => 'Funktion nicht verfügbar'];
-        echo json_encode($ret);
+        $return = ['errorMsg' => 'Funktion nicht verfügbar'];
+        echo json_encode($return);
         exit;
     }
     exit;
 }
 
 
+/**
+ * Google Login
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
 function checkGoogleLogin(Db $db, Session $session, array $data, array $config): array {
 
+    // Benötigte Skripts einbinden
     require_once 'GoogleLogin.php';
     require_once 'GoogleApi.php';
 
-    $return = [];
-
+    // Google API
     $gapi = new GoogleApi();
 
     // Google Access Token holen
     $accessToken = $gapi->GetAccessToken($config['bot']['googleClientId'], $config['bot']['googleRedirectUri'], $config['bot']['googleClientSecret'], $data['code']);
 
-    // User Infos holen
-    $user_info = $gapi->GetUserProfileInfo($accessToken['access_token']);
+    // Überprüfen ob der Token erfolgreich angefragt werden konnte
+    if ($accessToken['success']) {
 
-    $login = GoogleLogin::checkLogin($db, $user_info);
+        // User Infos holen
+        $userInfo = $gapi->GetUserProfileInfo($accessToken['token']);
 
-    $return['success'] = $login['success'];
+        // Überprüfen ob die User Infos erfolgreich abgefragt werden konnten
+        if ($userInfo['success']) {
 
-    if ($login['success']) {
-        $session->userId = $login['userId'];
-        $session->userRole = $login['userRole'];
+            // Login überprüfen
+            $return = GoogleLogin::checkLogin($db, $userInfo['userData']);
 
-        if ($data['referrer']) {
-            $return['url'] = parse_url($data['referrer']);
+            // Überprüfen ob das Login erfolgreich war
+            if ($return['success']) {
+
+                // Session Daten schreiben
+                $session->userId = $return['userId'];
+                $session->userRole = $return['roleType'];
+                $session->loginType = 'google';
+
+                setLastLogin($db, $return['userId']);
+
+                // Überprüfen ob eine Weiterleitungs URL vorhanden ist
+                if ($data['referrer']) {
+                    $return['url'] = parse_url($data['referrer']);
+
+                // Weiterleiten zur Edit-Seite
+                } else {
+                    $return['url'] = $config['url']['edit'];
+                }
+
+            // Überprüfen ob ein User erstellt werden soll
+            } elseif ($config['bot']['createUserIfNotExist']) {
+
+                // Registrierung
+                $return = GoogleLogin::register($db, $userInfo['userData']);
+
+                // Überprüfen ob die Registrierung erfolgreich war
+                if ($return['success']) {
+                    $session->userId = $return['userId'];
+                    $session->userRole = $return['roleType'];
+                    $session->loginType = 'google';
+
+                    setLastLogin($db, $return['userId']);
+                }
+
+                // Überprüfen ob eine Weiterleitungs URL vorhanden ist
+                if ($data['referrer']) {
+                    $return['url'] = parse_url($data['referrer']);
+
+                // Weiterleiten zur Edit-Seite
+                } else {
+                    $return['url'] = $config['url']['edit'];
+                }
+            }
         } else {
-            $return['url'] = $config['url']['edit'];
-        }
-    } elseif ($config['bot']['createUserIfNotExist']) {
-        $register = GoogleLogin::register($db, $user_info);
-
-        $return['success'] = $register['success'];
-
-        if ($register['success']) {
-            $session->userId = $login['userId'];
-            $session->userRole = $login['userRole'];
-        }
-
-        if ($data['referrer']) {
-            $return['url'] = parse_url($data['referrer']);
-        } else {
-            $return['url'] = $config['url']['edit'];
+            $return = $userInfo;
         }
     } else {
-        if ($login['warnMsg']) {
-            $return['warnMsg'][] = $login['warnMsg'];
-        }
-
-        if ($login['errorMsg']) {
-            $return['errorMsg'][] = $login['errorMsg'];
-        }
+        $return = $accessToken;
     }
 
     return $return;
 }
 
 
+/**
+ * Passwort Login
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
 function checkPasswordLogin(Db $db, Session $session, array $data, array $config): array {
 
     require_once 'PasswordLogin.php';
 
-    $return = [];
-    $login = PasswordLogin::checkLogin($db, $data);
+    $return = PasswordLogin::checkLogin($db, $data);
 
-    $return['success'] = $login['success'];
+    if ($return['success']) {
+        $session->userId = $return['userId'];
+        $session->userRole = $return['roleType'];
+        $session->loginType = 'password';
 
-    if ($login['success']) {
-        $session->userId = $login['userId'];
-        $session->userRole = $login['roleId'];
+        setLastLogin($db, $return['userId']);
 
         if ($data['referrer']) {
             $return['url'] = parse_url($data['referrer']);
         } else {
             $return['url'] = $config['url']['edit'];
         }
-    } else {
-        if ($login['warnMsg']) {
-            $return['warnMsg'][] = $login['warnMsg'];
-        }
-
-        if ($login['errorMsg']) {
-            $return['errorMsg'][] = $login['errorMsg'];
-        }
     }
 
     return $return;
 }
 
+
+/**
+ * Telegram Login
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function checkTelegramLogin(Db $db, Session $session, array $data, array $config): array {
+
+    // Benötigte Skripts einbinden
+    require_once 'TelegramLogin.php';
+    require_once 'TelegramApi.php';
+
+    // Telegram API
+    $tapi = new TelegramApi();
+
+    // Daten validieren
+    $authorisation = $tapi->checkTelegramAuthorization($config['bot']['telegramBotToken'], $data['params']);
+
+    // Wenn Daten Valid sind
+    if ($authorisation['success']) {
+
+        // Login versuchen
+        $return = TelegramLogin::checkLogin($db, $data['params']);
+
+        // Überprüfen ob das Login erfolgreich war
+        if ($return['success']) {
+
+            // Session Daten schreiben
+            $session->userId = $return['userId'];
+            $session->userRole = $return['roleType'];
+            $session->loginType = 'telegram';
+
+            setLastLogin($db, $return['userId']);
+
+            // Überprüfen ob eine Weiterleitungs URL vorhanden ist
+            if ($data['referrer']) {
+                $return['url'] = parse_url($data['referrer']);
+
+            // Weiterleiten zur Edit-Seite
+            } else {
+                $return['url'] = $config['url']['edit'];
+            }
+
+        // Überprüfen ob ein User erstellt werden soll
+        } elseif ($config['bot']['createUserIfNotExist']) {
+
+            // Registrierung
+            $return = TelegramLogin::register($db, $data['params']);
+
+            // Überprüfen ob die Registrierung erfolgreich war
+            if ($return['success']) {
+                $session->userId = $return['userId'];
+                $session->userRole = $return['roleType'];
+                $session->loginType = 'telegram';
+
+                setLastLogin($db, $return['userId']);
+            }
+
+            // Überprüfen ob eine Weiterleitungs URL vorhanden ist
+            if ($data['referrer']) {
+                $return['url'] = parse_url($data['referrer']);
+
+            // Weiterleiten zur Edit-Seite
+            } else {
+                $return['url'] = $config['url']['edit'];
+            }
+        }
+    } else {
+        $return = $authorisation;
+    }
+
+    return $return;
+}
+
+
+/**
+ * Gibt den Google Auth Link zurück
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
 function getGoogleAuthLink(Db $db, Session $session, ?array $data, array $config): array {
 
     $return['success'] = !!$config;
+    $return['errorMsg'] = $config ? null : 'Config nicht gefunden';
     $return['url'] = 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email') . '&redirect_uri=' . urlencode($config['bot']['googleRedirectUri']) . '&response_type=code&client_id=' . $config['bot']['googleClientId'] . '&access_type=online';
 
     return $return;
+}
+
+
+/**
+ * Gibt den Telegram Button zurück
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function getTelegramButton(Db $db, Session $session, ?array $data, array $config): array {
+
+        $return['success'] = !!$config;
+        $return['errorMsg'] = $config ? null : 'Config nicht gefunden';
+        $return['button'] = '<script async src="https://telegram.org/js/telegram-widget.js?7" data-telegram-login="' . $config['bot']['telegramBotName'] . '" data-size="large" data-auth-url="' . $config['bot']['telegramRedirectUri'] . '" data-request-access="write"></script>';
+        $return['button'] = '<script async src="https://telegram.org/js/telegram-widget.js?6" data-telegram-login="' . $config['bot']['telegramBotName'] . '" data-size="large" data-userpic="false" data-radius="3" data-auth-url="' . $config['bot']['telegramRedirectUri'] . '" data-request-access="write"></script>';
+
+        return $return;
+}
+
+
+/**
+ * Passwort User registrieren
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function registerPasswordUser(Db $db, Session $session, array $data, array $config): array {
+
+    require_once 'PasswordLogin.php';
+
+    $return = PasswordLogin::register($db, $data);
+
+    return $return;
+}
+
+
+/**
+ * Setz das Last Login in der DB
+ * @param Db $db
+ * @param int $userId
+ * @return void
+ */
+function setLastLogin(Db $db, int $userId): void {
+
+    $formPacket = [];
+    $formPacket['oldVal_userId'] = $userId;
+    $formPacket['lastLogin'] = date('Y-m-d H:i:s');
+    $formPacket['openTS'] = date('Y-m-d H:i:s');
+
+    $save = new SaveData($db, 1, 'user');
+    $save->save($formPacket);
+    unset ($save);
+
 }

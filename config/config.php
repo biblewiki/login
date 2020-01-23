@@ -25,9 +25,10 @@ $biwi_config = [
     'bot'  => [
         'googleClientId' => json_decode(file_get_contents('../../../config/config.json'))->googleClientId,
         'googleClientSecret' => json_decode(file_get_contents('../../../config/config.json'))->googleClientSecret,
-        'googleRedirectUri' => 'http://localhost/login/?bot=google',
+        'googleRedirectUri' => 'http://' . $_SERVER['HTTP_HOST'] . '/login/?bot=google',
         'telegramBotName' => json_decode(file_get_contents('../../../config/config.json'))->telegramBotName,
         'telegramBotToken' => json_decode(file_get_contents('../../../config/config.json'))->telegramBotToken,
+        'telegramRedirectUri' => 'http://' . $_SERVER['HTTP_HOST'] . '/login/?bot=telegram',
         'createUserIfNotExist' => true
     ],
 
@@ -51,7 +52,7 @@ $biwi_config = [
     // ------------------------------------------
     'url'  => [
         // Edit Webseite
-        'edit' => 'http://localhost/edit'
+        'edit' => 'http://bss.ifmx.ch/edit'
     ],
 
 

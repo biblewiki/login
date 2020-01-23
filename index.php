@@ -35,18 +35,27 @@
                 <div class="logo-container">
                     <img class="logo" src="core/resources/img/icon/biblewiki_logo.svg" />
                 </div>
-                <form class="register-form">
-                    <input type="text" placeholder="name"/>
-                    <input type="password" placeholder="password"/>
-                    <input type="text" placeholder="email address"/>
-                    <button>create</button>
-                    <p class="message">Already registered? <a href="#">Sign In</a></p>
-                </form>
                 <form id="login-form" class="login-form" action="javascript:void(0);">
                     <input type="text" placeholder="Benutzername" id="username" required/>
                     <input type="password" placeholder="Passwort" id="password" required/>
-                    <button>login</button>
-                    <p class="message"><a href="#">Passwort vergessen?</a></p>
+                    <button>Login</button>
+                    <p class="message" id="forgot-password"><a href="#">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
+                </form>
+                <div id="login-form-telegram" class="login-form-telegram"></div>
+                <form id="login-form-key" class="login-form-key" action="javascript:void(0);">
+                    <input type="text" placeholder="Benutzername" id="username-key" required/>
+                    <button>Login</button>
+                    <p class="message" id="forgot-password"><a href="#">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
+                </form>
+                <form id="register-form" class="register-form" action="javascript:void(0);">
+                    <input type="text" placeholder="Benutzername" id="newusername" required/>
+                    <input type="text" placeholder="Vorname" id="firstname" required/>
+                    <input type="text" placeholder="Nachname" id="lastname" required/>
+                    <input type="email" placeholder="Email" id="email" required/>
+                    <input type="password" placeholder="Passwort" id="newpassword" required/>
+                    <input type="password" placeholder="Passwort" id="password-repeat" required/>
+                    <button>Registrieren</button>
+                    <p class="message">Schon registriert? <a href="#" id="login">Einloggen</a></p>
                 </form>
                 <div class="login-methods">
                     <div class="logo-container">
@@ -56,7 +65,7 @@
                         <img id="telegram" class="logo-telegram" src="core/resources/img/telegram_logo.png">
                     </div>
                     <div class="logo-container">
-                        <img class="logo-fingerprint" src="core/resources/img/fingerprint.png">
+                        <img id="login-key" class="logo-fingerprint" src="core/resources/img/fingerprint.png">
                     </div>
                 </div>
             </div>

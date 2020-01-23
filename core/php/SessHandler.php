@@ -32,6 +32,15 @@ class SessHandler {
             [&$this, "destroy"],
             [&$this, "gc"]
         );
+
+        $rootDomain = '.' . $_SERVER['HTTP_HOST'];
+
+        $currentCookieParams = session_get_cookie_params();
+        $currentCookieParams['domain'] = $rootDomain;
+        $currentCookieParams['httponly'] = true;
+        $currentCookieParams['samesite'] = 'Strict';
+
+        session_set_cookie_params($currentCookieParams);
     }
 
 
@@ -262,14 +271,14 @@ class SessHandler {
         // Variablen initialisieren
         $ret = true;
 
-        // data de-serialisieren, damit die userId und loginId ermittelt werden kann
+        // data de-serialisieren, damit die userId und loginType ermittelt werden kann
         $sessionArr = $this->unserialize_session($data);
         $session = empty($sessionArr["biwi"]) ? null : $sessionArr["biwi"];
         unset($sessionArr);
 
-        // UserId & loginId ermitteln
+        // UserId & loginType ermitteln
         $userId = $session->userId ?? "";
-        $loginId = $session->loginId ?? "";
+        $loginType = $session->loginType ?? "";
 
         if ($userId) {
             $st = $this->db->prepare("
@@ -278,20 +287,20 @@ class SessHandler {
                     `lastAccess`,
                     `data`,
                     `userId`,
-                    `loginId`
+                    `loginType`
                 )
                 VALUES (
                     :sessionId,
                     NOW(),
                     :data,
                     :userId,
-                    :loginId
+                    :loginType
                 )
             ");
             $st->bindParam(":sessionId", $sessionId, \PDO::PARAM_STR);
             $st->bindParam(":data", $data, \PDO::PARAM_STR);
             $st->bindParam(":userId", $userId, \PDO::PARAM_STR);
-            $st->bindParam(":loginId", $loginId, \PDO::PARAM_STR);
+            $st->bindParam(":loginType", $loginType, \PDO::PARAM_STR);
             $ret = (bool)$st->execute();
             unset($st);
         }

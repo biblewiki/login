@@ -3,6 +3,12 @@
 
 class GoogleLogin {
 
+    /**
+     * Login überprüfen
+     * @param Db $db
+     * @param array $formPacket
+     * @return array
+     */
     public static function checkLogin(Db $db, array $formPacket): array {
 
         $return = [];
@@ -10,7 +16,9 @@ class GoogleLogin {
         // Abfrage vorbereiten
         $st = new SqlSelector('user');
         $st->addSelectElement('user.userId');
-        $st->addSelectElement('user.roleId');
+        $st->addSelectElement('role.roleType');
+
+        $st->addFromElement('INNER JOIN role ON role.roleId = user.roleId');
 
         $st->addWhereElement('googleId = :googleId');
 
@@ -21,7 +29,7 @@ class GoogleLogin {
         if ($row) {
             $return['success'] = true;
             $return['userId'] = $row['userId'];
-            $return['roleId'] = $row['roleId'];
+            $return['roleType'] = $row['roleType'];
         } else {
             $return['success'] = false;
             $return['warnMsg'] = 'Benutzer existiert nicht';
@@ -30,23 +38,45 @@ class GoogleLogin {
         return $return;
     }
 
+
+    /**
+     * Registrieren
+     * @param Db $db
+     * @param array $formPacket
+     * @return array
+     */
     public static function register(Db $db, array $formPacket): array {
 
-        $userData['googleId'] = $formPacket['id'];
-        $userData['email'] = $formPacket['email'];
-        $userData['emailState'] = $formPacket['verified_email'] ? 40 : 10; // 40 =bestätigt, 10 = unbestätigt
-        $userData['firstName'] = $formPacket['given_name'];
-        $userData['lastName'] = $formPacket['family_name'];
-        $userData['profilePicture'] = $formPacket['picture'];
+        // Überprüfen ob Email schon registriert
+        $st = new SqlSelector('user');
+        $st->addSelectElement('COUNT(email) AS count');
+        $st->addWhereElement('email = :email AND email IS NOT NULL');
+        $st->addParam(':email', $formPacket['email']);
+        $row = $st->execute($db);
+        unset ($st);
 
-        $save = new SaveData($db, 1, 'user');
-        $save->save($userData);
-        $userId = $save->getPrimaryKey();
-        unset ($save);
+        // Überprüfen ob Email schon existiert
+        if ($row['count'] && $formPacket['email']) {
+            $return['errorMsg'] = 'Emailadresse ist bereits registriert';
 
-        $return['success'] = !!$userId;
-        $return['userId'] = $userId;
-        $return['roleId'] = 1; // Standard
+        // Neuer User hinzufügen
+        } else {
+            // Daten vorbereiten
+            $userData['googleId'] = $formPacket['id'];
+            $userData['email'] = $formPacket['email'];
+            $userData['emailState'] = $formPacket['verified_email'] ? 40 : 10; // 40 =bestätigt, 10 = unbestätigt
+            $userData['firstName'] = $formPacket['given_name'];
+            $userData['lastName'] = $formPacket['family_name'];
+            $userData['profilePicture'] = $formPacket['picture'];
+
+            $save = new SaveData($db, 1, 'user');
+            $save->save($userData);
+            $userId = $save->getPrimaryKey()->value;
+            unset ($save);
+
+            $return['success'] = !!$userId;
+            $return['userId'] = $userId;
+        }
 
         return $return;
     }
