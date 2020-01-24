@@ -23,8 +23,9 @@
         <!-- JS -->
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-        <script src="core/js/main.js"></script>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <script src="core/js/notifications.js"></script>
+        <script src="core/js/main.js"></script>
 
         <title>Login | BibleWiki</title>
 
@@ -38,6 +39,7 @@
                 <form id="login-form" class="login-form" action="javascript:void(0);">
                     <input type="text" placeholder="Benutzername" id="username" required/>
                     <input type="password" placeholder="Passwort" id="password" required/>
+                    <div class="g-recaptcha" data-sitekey="6Lf1V9IUAAAAAHLg5uaxk8Vg2Ov4c_w2ctIqGJEr"></div>
                     <button>Login</button>
                     <p class="message" id="forgot-password"><a href="#">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
                 </form>

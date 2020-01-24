@@ -1,10 +1,25 @@
 
+/* global grecaptcha */
+
 $(document).ready(function() {
 
     // Bot auslesen wenn vorhanden
     let bot = $.urlParam('bot');
 
     if (bot) {
+
+        if (bot === 'emailLink') {
+            let jsonTx = {
+                action: 'confirmEmail',
+                data: {
+                    bot: bot,
+                    userId: $.urlParam('userId'),
+                    emailToken: $.urlParam('emailToken')
+                }
+            };
+
+            $.ajaxRequest(jsonTx);
+        }
 
         if (bot === 'google') {
             let jsonTx = {
@@ -58,8 +73,8 @@ $(document).ready(function() {
         let username = $('#username').val();
         let password = $('#password').val();
 
-        // Überprüfen ob Benutzername nicht leer ist
-        if (username !== '') {
+        // Überprüfen ob Captcha ausgefüllt wurde
+        if (grecaptcha.getResponse()) {
 
             let jsonTx = {
                 action: 'checkPasswordLogin',
@@ -71,6 +86,8 @@ $(document).ready(function() {
             };
 
             $.ajaxRequest(jsonTx);
+        } else {
+            notification('Captcha', 'Captcha wurde nicht ausgefüllt.', 'warning'); // Warnung anzeigen
         }
     });
 
@@ -144,8 +161,8 @@ $(document).ready(function() {
     $("#register-form").submit(function() {
 
         let username = $('#newusername').val();
-        let firstname = $('#firstname').val();
-        let lastname = $('#lastname').val();
+        let firstName = $('#firstname').val();
+        let lastName = $('#lastname').val();
         let email = $('#email').val();
         let password = $('#newpassword').val();
         let passwordRepeat = $('#password-repeat').val();
@@ -157,8 +174,8 @@ $(document).ready(function() {
                 action: 'registerPasswordUser',
                 data: {
                     username: username,
-                    firstname: firstname,
-                    lastname: lastname,
+                    firstName: firstName,
+                    lastName: lastName,
                     email: email,
                     password: password,
                     passwordRepeat: passwordRepeat,
@@ -197,7 +214,7 @@ $.ajaxRequest = function(jsonTx) {
 
                 // Weiterleiten wenn eine URL übergeben wurde
                 if(data.url) {
-                    window.location.replace(data.url); // Weiterleiten wenn eingeloggt
+                    window.location.href = data.url; // Weiterleiten wenn eingeloggt
                 }
             } else {
 

@@ -57,6 +57,20 @@ $biwi_config = [
 
 
     // ------------------------------------------
+    // Mail
+    // ------------------------------------------
+    'mail'  => [
+        // Host
+        'host' => 'asmtp.mail.hostpoint.ch',
+        'smtp' => true,
+        'port' => '465',
+        'certificateType' => 'ssl',
+        'smtpUser' => json_decode(file_get_contents('../../../config/config.json'))->smtpUser,
+        'smtpPassword' => json_decode(file_get_contents('../../../config/config.json'))->smtpPassword
+    ],
+
+
+    // ------------------------------------------
     // Sicherheit
     // ------------------------------------------
     'security' => [

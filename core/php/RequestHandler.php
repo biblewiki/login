@@ -263,6 +263,20 @@ function checkTelegramLogin(Db $db, Session $session, array $data, array $config
 
 
 /**
+ * Überprüft die Bestätigung der Emailadresse
+ * @param Db $db
+ * @param Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function confirmEmail(Db $db, Session $session, ?array $data, array $config): array {
+    require_once 'PasswordLogin.php';
+    return PasswordLogin::confirmEmail($db, $data);
+}
+
+
+/**
  * Gibt den Google Auth Link zurück
  * @param Db $db
  * @param Session $session
@@ -312,6 +326,18 @@ function registerPasswordUser(Db $db, Session $session, array $data, array $conf
     require_once 'PasswordLogin.php';
 
     $return = PasswordLogin::register($db, $data);
+
+    if ($return['success']) {
+
+        $return = PasswordLogin::sendRegisterEmail($return, $config);
+
+        if ($return['success']) {
+            $link = '';
+            $link .= $_SERVER['HTTPS'] ? 'https://' : 'http://';
+            $link .= $_SERVER['HTTP_HOST'];
+            $return['url'] = $link;
+        }
+    }
 
     return $return;
 }
