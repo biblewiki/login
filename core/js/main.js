@@ -21,6 +21,50 @@ $(document).ready(function() {
             $.ajaxRequest(jsonTx);
         }
 
+        if (bot === 'passwordLink') {
+            let jsonTx = {
+                action: 'checkResetPasswordToken',
+                data: {
+                    bot: bot,
+                    userId: $.urlParam('userId'),
+                    passwordToken: $.urlParam('passwordToken')
+                }
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: 'core/php/RequestHandler.php',
+                dataType: 'json',
+                data: JSON.stringify(jsonTx),
+                success: function(data) {
+                    if (data.success) {
+                        $("#reset-password-request-form").hide();
+                        $("#reset-password-form").show();
+                        $("#login-form").hide();
+                        $("#login-form-telegram").hide();
+                        $("#login-form-key").hide();
+                        $("#register-form").hide();
+                    } else {
+
+                        // Fehler anzeigen
+                        if (data.errorMsg) {
+                            notification('Fehler', data.errorMsg, 'error'); // Fehler anzeigen
+                        }
+
+                        // Warnungen anzeigen
+                        if (data.warnMsg) {
+                            notification('Fehlgeschlagen', data.warnMsg, 'warning'); // Warnung anzeigen
+                        }
+                    }
+
+                    // Info anzeigen
+                    if (data.infoMsg) {
+                        notification('Info', data.infoMsg); // Info anzeigen
+                    }
+                }
+            });
+        }
+
         if (bot === 'google') {
             let jsonTx = {
                 action: 'checkGoogleLogin',
@@ -81,7 +125,8 @@ $(document).ready(function() {
                 data: {
                     username: username,
                     password: password,
-                    referrer: document.referrer
+                    referrer: document.referrer,
+                    captcha: grecaptcha.getResponse()
                 }
             };
 
@@ -100,7 +145,7 @@ $(document).ready(function() {
         if (username !== '') {
 
             let jsonTx = {
-                action: 'checkPasswordLogin',
+                action: 'getToken',
                 data: {
                     username: username,
                     referrer: document.referrer
@@ -111,8 +156,94 @@ $(document).ready(function() {
         }
     });
 
+    // Passwort Reset Request Form übermitteln
+    $("#reset-password-request-form").submit(function() {
+
+        let username = $('#username-password-reset').val();
+
+        // Überprüfen ob Benutzername nicht leer ist
+        if (username !== '') {
+
+            let jsonTx = {
+                action: 'resetUserPasswordRequest',
+                data: {
+                    username: username
+                }
+            };
+
+            $.ajaxRequest(jsonTx);
+        }
+    });
+
+    // Passwort Reset Form übermitteln
+    $("#reset-password-form").submit(function() {
+
+        let password = $('#newpassword-password-reset').val();
+        let passwordRepeat = $('#password-repeat-password-reset').val();
+
+        // Überprüfen ob Passwörter übereinstimmen
+        if (password === passwordRepeat) {
+
+            let jsonTx = {
+                action: 'resetUserPassword',
+                data: {
+                    userId: $.urlParam('userId'),
+                    passwordToken: $.urlParam('passwordToken'),
+                    password: password,
+                    passwordRepeat: passwordRepeat
+                }
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: 'core/php/RequestHandler.php',
+                dataType: 'json',
+                data: JSON.stringify(jsonTx),
+                success: function(data) {
+                    if (data.success) {
+                        $("#reset-password-request-form").show();
+                        $("#reset-password-form").hide();
+                        $("#login-form").hide();
+                        $("#login-form-telegram").hide();
+                        $("#login-form-key").hide();
+                        $("#register-form").hide();
+                    } else {
+
+                        // Fehler anzeigen
+                        if (data.errorMsg) {
+                            notification('Fehler', data.errorMsg, 'error'); // Fehler anzeigen
+                        }
+
+                        // Warnungen anzeigen
+                        if (data.warnMsg) {
+                            notification('Fehlgeschlagen', data.warnMsg, 'warning'); // Warnung anzeigen
+                        }
+                    }
+
+                    // Info anzeigen
+                    if (data.infoMsg) {
+                        notification('Info', data.infoMsg); // Info anzeigen
+                    }
+                }
+            });
+        } else {
+            notification('Fehler', 'Passwörter stimmen nicht überein', 'error'); // Fehler anzeigen
+        }
+    });
+
+    $("#forgot-password").click(function() {
+        $("#reset-password-request-form").show();
+        $("#reset-password-form").hide();
+        $("#login-form").hide();
+        $("#login-form-telegram").hide();
+        $("#login-form-key").hide();
+        $("#register-form").hide();
+    });
+
     // Login klick
     $("#login").click(function() {
+        $("#reset-password-request-form").hide();
+        $("#reset-password-form").hide();
         $("#register-form").hide();
         $("#login-form-key").hide();
         $("#login-form-telegram").hide();
@@ -121,6 +252,8 @@ $(document).ready(function() {
 
     // Telegram klick
     $("#telegram").click(function() {
+        $("#reset-password-request-form").hide();
+        $("#reset-password-form").hide();
         $("#register-form").hide();
         $("#login-form-key").hide();
         $("#login-form-telegram").show();
@@ -135,7 +268,7 @@ $(document).ready(function() {
             url: 'core/php/RequestHandler.php',
             dataType: 'json',
             data: JSON.stringify(jsonTx),
-            success: function(data) { console.log(data);
+            success: function(data) {
                 $("#login-form-telegram").html(data.button);
             }
         });
@@ -143,6 +276,8 @@ $(document).ready(function() {
 
     // Login Key klick
     $("#login-key").click(function() {
+        $("#reset-password-request-form").hide();
+        $("#reset-password-form").hide();
         $("#register-form").hide();
         $("#login-form-key").show();
         $("#login-form-telegram").hide();
@@ -151,6 +286,8 @@ $(document).ready(function() {
 
     // Registrieren klick
     $("#register").click(function() {
+        $("#reset-password-request-form").hide();
+        $("#reset-password-form").hide();
         $("#login-form").hide();
         $("#login-form-telegram").hide();
         $("#login-form-key").hide();
@@ -183,7 +320,38 @@ $(document).ready(function() {
                 }
             };
 
-            $.ajaxRequest(jsonTx);
+            $.ajax({
+                type: 'POST',
+                url: 'core/php/RequestHandler.php',
+                dataType: 'json',
+                data: JSON.stringify(jsonTx),
+                success: function(data) {
+                    if (data.success) {
+                        $("#reset-password-request-form").hide();
+                        $("#reset-password-form").hide();
+                        $("#login-form").show();
+                        $("#login-form-telegram").hide();
+                        $("#login-form-key").hide();
+                        $("#register-form").hide();
+                    } else {
+
+                        // Fehler anzeigen
+                        if (data.errorMsg) {
+                            notification('Fehler', data.errorMsg, 'error'); // Fehler anzeigen
+                        }
+
+                        // Warnungen anzeigen
+                        if (data.warnMsg) {
+                            notification('Fehlgeschlagen', data.warnMsg, 'warning'); // Warnung anzeigen
+                        }
+                    }
+
+                    // Info anzeigen
+                    if (data.infoMsg) {
+                        notification('Info', data.infoMsg); // Info anzeigen
+                    }
+                }
+            });
         } else {
             notification('Fehler', 'Passwörter stimmen nicht überein', 'error'); // Fehler anzeigen
         }
@@ -217,6 +385,7 @@ $.ajaxRequest = function(jsonTx) {
                     window.location.href = data.url; // Weiterleiten wenn eingeloggt
                 }
             } else {
+                grecaptcha.reset();
 
                 // Fehler anzeigen
                 if (data.errorMsg) {

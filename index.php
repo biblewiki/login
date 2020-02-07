@@ -36,20 +36,20 @@
                 <div class="logo-container">
                     <img class="logo" src="core/resources/img/icon/biblewiki_logo.svg" />
                 </div>
-                <form id="login-form" class="login-form" action="javascript:void(0);">
+                <form id="login-form" action="javascript:void(0);">
                     <input type="text" placeholder="Benutzername" id="username" required/>
                     <input type="password" placeholder="Passwort" id="password" required/>
                     <div class="g-recaptcha" data-sitekey="6Lf1V9IUAAAAAHLg5uaxk8Vg2Ov4c_w2ctIqGJEr"></div>
                     <button>Login</button>
-                    <p class="message" id="forgot-password"><a href="#">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
+                    <p class="message"><a href="#" id="forgot-password">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
                 </form>
-                <div id="login-form-telegram" class="login-form-telegram"></div>
-                <form id="login-form-key" class="login-form-key" action="javascript:void(0);">
+                <div id="login-form-telegram"></div>
+                <form id="login-form-key" action="javascript:void(0);">
                     <input type="text" placeholder="Benutzername" id="username-key" required/>
                     <button>Login</button>
-                    <p class="message" id="forgot-password"><a href="#">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
+                    <p class="message"><a href="#" id="forgot-password">Passwort vergessen? </a><a href="#" id="register">Registrieren</a></p>
                 </form>
-                <form id="register-form" class="register-form" action="javascript:void(0);">
+                <form id="register-form" action="javascript:void(0);">
                     <input type="text" placeholder="Benutzername" id="newusername" required/>
                     <input type="text" placeholder="Vorname" id="firstname" required/>
                     <input type="text" placeholder="Nachname" id="lastname" required/>
@@ -58,6 +58,15 @@
                     <input type="password" placeholder="Passwort" id="password-repeat" required/>
                     <button>Registrieren</button>
                     <p class="message">Schon registriert? <a href="#" id="login">Einloggen</a></p>
+                </form>
+                <form id="reset-password-request-form" action="javascript:void(0);">
+                    <input type="text" placeholder="Benutzername" id="username-password-reset" required/>
+                    <button>Passwort zurücksetzen</button>
+                </form>
+                <form id="reset-password-form"action="javascript:void(0);">
+                    <input type="password" placeholder="Passwort" id="newpassword-password-reset" required/>
+                    <input type="password" placeholder="Passwort" id="password-repeat-password-reset" required/>
+                    <button>Passwort zurücksetzen</button>
                 </form>
                 <div class="login-methods">
                     <div class="logo-container">

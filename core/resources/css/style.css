@@ -80,15 +80,11 @@ body {
     text-decoration: none;
 }
 
-.form .login-form-telegram {
-    display: none;
-}
-
-.form .login-form-key {
-    display: none;
-}
-
-.form .register-form {
+.form #login-form-telegram,
+.form #login-form-key,
+.form #register-form,
+.form #reset-password-request-form,
+.form #reset-password-form {
     display: none;
 }
 

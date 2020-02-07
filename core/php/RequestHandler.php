@@ -40,10 +40,10 @@ if ($jsonTx->action != "") {
         // Session auslesen
         $session = null;
         session_start();
-        if (\array_key_exists("biwi", $_SESSION) && ($_SESSION["biwi"] instanceof Session)) {
+        if (\array_key_exists("biwi", $_SESSION) && ($_SESSION["biwi"] instanceof biwi\Session)) {
             $session = $_SESSION["biwi"];
         } else {
-            $session = new Session();
+            $session = new biwi\Session();
         }
 
         // Daten auslesen
@@ -70,12 +70,12 @@ if ($jsonTx->action != "") {
 /**
  * Google Login
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function checkGoogleLogin(Db $db, Session $session, array $data, array $config): array {
+function checkGoogleLogin(Db $db, biwi\Session $session, array $data, array $config): array {
 
     // Benötigte Skripts einbinden
     require_once 'GoogleLogin.php';
@@ -156,28 +156,34 @@ function checkGoogleLogin(Db $db, Session $session, array $data, array $config):
 /**
  * Passwort Login
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function checkPasswordLogin(Db $db, Session $session, array $data, array $config): array {
+function checkPasswordLogin(Db $db, biwi\Session $session, array $data, array $config): array {
 
+    require_once 'GoogleApi.php';
     require_once 'PasswordLogin.php';
 
-    $return = PasswordLogin::checkLogin($db, $data);
+    $return = GoogleApi::checkCaptcha($data['captcha'], $config['bot']['googleCatchaSecret']);
 
     if ($return['success']) {
-        $session->userId = $return['userId'];
-        $session->userRole = $return['roleType'];
-        $session->loginType = 'password';
 
-        setLastLogin($db, $return['userId']);
+        $return = PasswordLogin::checkLogin($db, $data);
 
-        if ($data['referrer']) {
-            $return['url'] = parse_url($data['referrer']);
-        } else {
-            $return['url'] = $config['url']['edit'];
+        if ($return['success']) {
+            $session->userId = $return['userId'];
+            $session->userRole = $return['roleType'];
+            $session->loginType = 'password';
+
+            setLastLogin($db, $return['userId']);
+
+            if ($data['referrer']) {
+                $return['url'] = $data['referrer'];
+            } else {
+                $return['url'] = $config['url']['edit'];
+            }
         }
     }
 
@@ -188,12 +194,12 @@ function checkPasswordLogin(Db $db, Session $session, array $data, array $config
 /**
  * Telegram Login
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function checkTelegramLogin(Db $db, Session $session, array $data, array $config): array {
+function checkTelegramLogin(Db $db, biwi\Session $session, array $data, array $config): array {
 
     // Benötigte Skripts einbinden
     require_once 'TelegramLogin.php';
@@ -265,12 +271,12 @@ function checkTelegramLogin(Db $db, Session $session, array $data, array $config
 /**
  * Überprüft die Bestätigung der Emailadresse
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function confirmEmail(Db $db, Session $session, ?array $data, array $config): array {
+function confirmEmail(Db $db, biwi\Session $session, ?array $data, array $config): array {
     require_once 'PasswordLogin.php';
     return PasswordLogin::confirmEmail($db, $data);
 }
@@ -279,12 +285,12 @@ function confirmEmail(Db $db, Session $session, ?array $data, array $config): ar
 /**
  * Gibt den Google Auth Link zurück
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function getGoogleAuthLink(Db $db, Session $session, ?array $data, array $config): array {
+function getGoogleAuthLink(Db $db, biwi\Session $session, ?array $data, array $config): array {
 
     $return['success'] = !!$config;
     $return['errorMsg'] = $config ? null : 'Config nicht gefunden';
@@ -297,12 +303,12 @@ function getGoogleAuthLink(Db $db, Session $session, ?array $data, array $config
 /**
  * Gibt den Telegram Button zurück
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function getTelegramButton(Db $db, Session $session, ?array $data, array $config): array {
+function getTelegramButton(Db $db, biwi\Session $session, ?array $data, array $config): array {
 
         $return['success'] = !!$config;
         $return['errorMsg'] = $config ? null : 'Config nicht gefunden';
@@ -316,12 +322,12 @@ function getTelegramButton(Db $db, Session $session, ?array $data, array $config
 /**
  * Passwort User registrieren
  * @param Db $db
- * @param Session $session
+ * @param biwi\Session $session
  * @param array $data
  * @param array $config
  * @return array
  */
-function registerPasswordUser(Db $db, Session $session, array $data, array $config): array {
+function registerPasswordUser(Db $db, biwi\Session $session, array $data, array $config): array {
 
     require_once 'PasswordLogin.php';
 
@@ -332,11 +338,70 @@ function registerPasswordUser(Db $db, Session $session, array $data, array $conf
         $return = PasswordLogin::sendRegisterEmail($return, $config);
 
         if ($return['success']) {
-            $link = '';
-            $link .= $_SERVER['HTTPS'] ? 'https://' : 'http://';
+            $link = $_SERVER['HTTPS'] ? 'https://' : 'http://';
             $link .= $_SERVER['HTTP_HOST'];
             $return['url'] = $link;
         }
+    }
+
+    return $return;
+}
+
+
+/**
+ * Passwort reset Token überprüfen
+ * @param Db $db
+ * @param biwi\Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function checkResetPasswordToken(Db $db, biwi\Session $session, array $data, array $config): array {
+
+    require_once 'PasswordLogin.php';
+
+    return PasswordLogin::checkResetPasswordToken($db, $data);
+}
+
+
+/**
+ * User Passwort zurücksetzen
+ * @param Db $db
+ * @param biwi\Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function resetUserPassword(Db $db, biwi\Session $session, array $data, array $config): array {
+
+    require_once 'PasswordLogin.php';
+
+    $return = PasswordLogin::resetUserPassword($db, $data);
+
+    return $return;
+}
+
+
+/**
+ * User Passwort reseten Anfrage
+ * @param Db $db
+ * @param biwi\Session $session
+ * @param array $data
+ * @param array $config
+ * @return array
+ */
+function resetUserPasswordRequest(Db $db, biwi\Session $session, array $data, array $config): array {
+
+    require_once 'PasswordLogin.php';
+
+    $return = PasswordLogin::sendPasswortResetMail($db, $data, $config);
+
+    $link = $_SERVER['HTTPS'] ? 'https://' : 'http://';
+    $link .= $_SERVER['HTTP_HOST'];
+    $return['url'] = $link;
+
+    if ($return['success']) {
+        PasswordLogin::setUserState($db, $data['userId'], 30);
     }
 
     return $return;

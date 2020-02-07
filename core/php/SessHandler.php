@@ -277,7 +277,7 @@ class SessHandler {
         unset($sessionArr);
 
         // UserId & loginType ermitteln
-        $userId = $session->userId ?? "";
+        $userId = $session->userId ?? 0;
         $loginType = $session->loginType ?? "";
 
         if ($userId) {
@@ -331,13 +331,13 @@ class SessHandler {
             $offset = $value[1];
             if ($lastOffset !== null) {
                 $valueText = mb_substr($data, (int)$lastOffset, $offset - $lastOffset);
-                $returnArray[$currentKey] = unserialize($valueText, ["allowed_classes" => [Session::class]]);
+                $returnArray[$currentKey] = unserialize($valueText, ["allowed_classes" => [biwi\Session::class]]);
             }
             $currentKey = $value[0];
             $lastOffset = $offset + mb_strlen($currentKey) + 1;
         }
         $valueText = mb_substr($data, (int)$lastOffset);
-        $returnArray[$currentKey] = unserialize($valueText, ["allowed_classes" => [Session::class]]);
+        $returnArray[$currentKey] = unserialize($valueText, ["allowed_classes" => [biwi\Session::class]]);
         return $returnArray;
     }
 }

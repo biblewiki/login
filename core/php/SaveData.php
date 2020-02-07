@@ -109,7 +109,7 @@ class SaveData {
         if ($this->hasChangeInfoFields && !$restoreMode && $oldValueExist) {
             $error = $this->checkIsChangedByOtherUser($formPacket);
             if ($error) {
-                throw new ExceptionNotice($error);
+                throw new \Exception($error);
             }
         }
 

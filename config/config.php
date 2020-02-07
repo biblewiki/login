@@ -26,6 +26,7 @@ $biwi_config = [
         'googleClientId' => json_decode(file_get_contents('../../../config/config.json'))->googleClientId,
         'googleClientSecret' => json_decode(file_get_contents('../../../config/config.json'))->googleClientSecret,
         'googleRedirectUri' => 'http://' . $_SERVER['HTTP_HOST'] . '/login/?bot=google',
+        'googleCatchaSecret' => json_decode(file_get_contents('../../../config/config.json'))->googleCaptchaSecret,
         'telegramBotName' => json_decode(file_get_contents('../../../config/config.json'))->telegramBotName,
         'telegramBotToken' => json_decode(file_get_contents('../../../config/config.json'))->telegramBotToken,
         'telegramRedirectUri' => 'http://' . $_SERVER['HTTP_HOST'] . '/login/?bot=telegram',
@@ -52,7 +53,7 @@ $biwi_config = [
     // ------------------------------------------
     'url'  => [
         // Edit Webseite
-        'edit' => 'http://bss.ifmx.ch/edit'
+        'edit' => 'http://joelkohler.ifmx.ch/edit'
     ],
 
 
